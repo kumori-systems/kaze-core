@@ -1,0 +1,14 @@
+{
+  "spec": "http://eslap.cloud/manifest/service/1_0_0",
+  "name": "eslap://{{=it.domain}}/services/{{=it.name}}/0_0_1",
+  "configuration": {
+    "resources": [],
+    "parameters": []
+  },
+  "roles": [],
+  "channels": {
+    "provides": [],
+    "requires": []
+  },
+  "connectors": []
+}

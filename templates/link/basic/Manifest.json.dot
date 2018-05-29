@@ -1,0 +1,12 @@
+{
+    "spec": "http://eslap.cloud/manifest/link/1_0_0",
+    "endpoints": [
+        {
+            "deployment": "{{=it.inboundUuid}}",
+            "channel": "frontend"
+        },{
+            "deployment": "{{=it.deployUuid}}",
+            "channel": "{{=it.name}}"
+        }
+    ]
+}
