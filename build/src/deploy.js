@@ -26,7 +26,7 @@ function deployCommand(paths, stamp) {
             console.log(`Deploying ${_path}, it may take a while...`);
             try {
                 // _path is pointing to directory, bundle then register
-                let bundlePath = undefined;
+                let bundlePath;
                 if (!fs.existsSync(_path)) {
                     console.warn(`${_path} does not exist. Skipping.`);
                 }

@@ -1,8 +1,6 @@
-import { Parameter, ParameterType, processParameters, getJSON, parseEcloudURN, createPath, startupCheck, createElementFromTemplate, executeProgram } from './utils';
+import { Parameter, processParameters, getJSON, createPath, startupCheck, createElementFromTemplate, executeProgram } from './utils';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as child_process from 'child_process';
-
 
 export interface ComponentConfig {
   domain: string;
@@ -43,6 +41,7 @@ export class Component {
   }
 
   public install(config: ComponentConfig, rootPath?: string): Promise<string> {
+    rootPath = rootPath || this.rootPath
     let componentRootPath = `${this.rootPath}/${config.domain}/${config.name}`;
     return executeProgram('npm', ['run', 'devinit'], {cwd: componentRootPath})
     .then(() => {
@@ -95,7 +94,6 @@ export class Component {
     let domain = parts[2];
     let name = parts[4];
     let version = parts[5];
-    let component = new Component(this.workspacePath, this.templatesPath);
     let config:ComponentConfig = {
       name: name,
       domain: domain,

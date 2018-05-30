@@ -16,7 +16,7 @@ export async function deployCommand(paths: string[], stamp: string): Promise<any
     console.log(`Deploying ${_path}, it may take a while...`)
     try {
       // _path is pointing to directory, bundle then register
-      let bundlePath: string = undefined;
+      let bundlePath: string | void;
       if (!fs.existsSync(_path)) {
         console.warn(`${_path} does not exist. Skipping.`);
       } else if (path.extname(_path) === '') {

@@ -31,6 +31,7 @@ class Component {
         });
     }
     install(config, rootPath) {
+        rootPath = rootPath || this.rootPath;
         let componentRootPath = `${this.rootPath}/${config.domain}/${config.name}`;
         return utils_1.executeProgram('npm', ['run', 'devinit'], { cwd: componentRootPath })
             .then(() => {
@@ -83,7 +84,6 @@ class Component {
         let domain = parts[2];
         let name = parts[4];
         let version = parts[5];
-        let component = new Component(this.workspacePath, this.templatesPath);
         let config = {
             name: name,
             domain: domain,

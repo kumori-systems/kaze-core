@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "SaaSDK Workspace management library",
   "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "scripts": {
     "build": "taskr build",
     "lint": "taskr lint",

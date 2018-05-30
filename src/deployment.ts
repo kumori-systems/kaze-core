@@ -1,9 +1,9 @@
 import { Parameter, ParameterType, Resource, ResourceType, StampConfig, readConfigFile, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON } from './utils';
 import * as path from 'path';
 import { Role, Service, ServiceConfig } from './service';
-import { Component, ComponentConfig } from './component';
+import { Component } from './component';
 import { access, constants } from 'fs';
-import { AdmissionClient, ScalingDeploymentModification, DeploymentInstanceInfo } from 'admission-client';
+import { AdmissionClient, ScalingDeploymentModification } from 'admission-client';
 
 export interface DeploymentConfig {
   name: string,
