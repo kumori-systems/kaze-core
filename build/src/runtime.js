@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("./utils");
-const runtime = require("runtime");
+const runtime = require("@kumori/runtime");
 const path = require("path");
 class Runtime {
     constructor(workspacePath, templatesPath) {
