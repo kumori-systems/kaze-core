@@ -1,7 +1,7 @@
 import * as dot from 'dot';
 import * as fs from 'fs';
 import { parseEcloudURN, createPath, startupCheck, ECloudNameParts, createElementFromTemplate, deleteFolder } from './utils';
-import * as runtime from 'runtime';
+import * as runtime from '@kumori/runtime';
 import * as path from 'path';
 
 export interface RuntimeConfig {
@@ -21,7 +21,7 @@ export class Runtime {
   constructor(workspacePath?: string, templatesPath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/runtimes`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','runtime'));    
+    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','runtime'));
   }
 
   public add(template: string, config: RuntimeConfig): Promise<string> {

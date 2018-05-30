@@ -51,7 +51,7 @@
     "ncp": "^2.0.0",
     "read": "^1.0.7",
     "request": "^2.81.0",
-    "runtime": "git+ssh://git@gitlab.com:jbgisber/libs-runtime.git#master",
+    "@kumori/runtime": "https://github.com/kumori-systems/runtime.git#master",
     "uuid": "^3.2.1"
   }
 }
