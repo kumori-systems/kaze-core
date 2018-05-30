@@ -2,14 +2,16 @@ import * as path from 'path';
 import * as utils from './utils'
 import { bundleCommand } from './bundle';
 import * as fs from 'fs';
+import { Stamp } from './stamp';
 
 export async function deployCommand(paths: string[], stamp: string): Promise<any> {
+  let stampStub = new Stamp();
   let response = {
     successful: [],
     errors: [],
     deployments: []
   }
-  console.log(`Target stamp: ${stamp}`); 
+  console.log(`Target stamp: ${stamp}`);
   for (let _path of paths) {
     console.log(`Deploying ${_path}, it may take a while...`)
     try {
@@ -27,39 +29,35 @@ export async function deployCommand(paths: string[], stamp: string): Promise<any
         console.warn(`${_path} is pointing to neither a directory nor zip. Skipping.`);
       }
 
-      if (bundlePath) {  
-        let result = await utils.stampPost(bundlePath, stamp, 'deploy');
-        if (result && result.data) {
-          if (result.success) {
-            console.log(`${_path} registered`);
-          } else {
-            console.log(`${_path} registration failed`);
+      if (bundlePath) {
+        // let result = await utils.stampPost(bundlePath, stamp, 'deploy');
+        let result = await stampStub.register(stamp, bundlePath);
+
+        if (result.successful) {
+            response.successful = response.successful.concat(result.successful);
+        }
+
+        if (result.errors && result.errors.length > 0) {
+          response.errors = response.errors.concat(result.errors);
+          for (let e of result.errors) {
+            let index = e.indexOf(":");
+            let mes = e.substring(index+1);
+            console.log(`Error: ${mes}`);
           }
-          if (result.data.successful) {
-            response.successful = response.successful.concat(result.data.successful);
+        }
+        if (result.deployments) {
+          if (result.deployments.successful) {
+            // response.successful = response.successful.concat(result.data.deployments.successful);
+            for (let dep of result.deployments.successful) {
+              let depResult = utils.processDeploymentsInfo(dep);
+              response.deployments.push(depResult);
+            }
           }
-          if (result.data.errors && result.data.errors.length > 0) {
-            response.errors = response.errors.concat(result.data.errors);
-            for (let e of result.data.errors) {
-              let index = e.indexOf(":");
-              let mes = e.substring(index+1);
+          if (result.deployments.errors && result.deployments.errors.length > 0) {
+            response.errors = response.errors.concat(result.deployments.errors);
+            for (let e of result.deployments.errors) {
+              let mes = (e.message) ? e.message : e;
               console.log(`Error: ${mes}`);
-            }
-          }
-          if (result.data.deployments) {
-            if (result.data.deployments.successful) {
-              // response.successful = response.successful.concat(result.data.deployments.successful);
-              for (let dep of result.data.deployments.successful) {
-                let depResult = utils.processDeploymentsInfo(dep);
-                response.deployments.push(depResult);
-              }
-            }
-            if (result.data.deployments.errors && result.data.deployments.errors.length > 0) {
-              response.errors = response.errors.concat(result.data.deployments.errors);
-              for (let e of result.data.deployments.errors) {
-                let mes = (e.message) ? e.message : e;
-                console.log(`Error: ${mes}`);
-              }
             }
           }
         }

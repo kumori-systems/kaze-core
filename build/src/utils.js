@@ -20,6 +20,10 @@ const rimraf = require("rimraf");
 const vm = require("vm");
 const child_process = require("child_process");
 const archiver = require("archiver");
+exports.DEFAULT_CONFIG_FILE = 'kazeConfig.json';
+exports.configuration = {
+    configFileName: exports.DEFAULT_CONFIG_FILE
+};
 exports.question = denodeify(read);
 exports.mkdir = denodeify(mkdirp);
 exports.httpDel = denodeify(request.delete);
@@ -30,19 +34,33 @@ exports.access = denodeify(fs.access);
 exports.stampPost = function register(path, stamp, op) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const opts = {
-                uri: `${stamp}/admission/bundles`,
+            let workspaceConfig = readConfigFile();
+            let stampConfig = workspaceConfig.stamps[stamp];
+            if (!stampConfig) {
+                return Promise.reject({
+                    err: `Stamp ${stamp} not found`
+                });
+            }
+            let opts = {
+                uri: `${stampConfig.admission}/admission/bundles`,
                 formData: {
                     bundlesZip: fs.createReadStream(path)
                 }
             };
+            if (stampConfig && stampConfig.token) {
+                opts.auth = {
+                    bearer: stampConfig.token
+                };
+            }
             let response = yield exports.httpPost(opts);
             let responseJson = JSON.parse(response.body);
+            // console.log('Workspace|Utils|stampPost|response: ' + response.body);
             return Promise.resolve(responseJson);
         }
         catch (error) {
             // console.log("Error:", error);
             let message = error.code ? error.code : (error.message ? error.message : error);
+            // console.error('Workspace|Utils|stampPost|Error: ' + message);
             return Promise.reject({
                 err: `${op} operation failed in ${stamp}`,
                 additionalInfo: message
@@ -82,10 +100,20 @@ function checkStamp(stamp, exitOnFail = true) {
     });
 }
 exports.checkStamp = checkStamp;
-exports.getStampStatus = function (path) {
+exports.getStampStatus = function (stamp) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let result = yield exports.httpHead(`${path}/admission/deployments`);
+            let workspaceConfig = readConfigFile();
+            let stampConfig = workspaceConfig.stamps[stamp];
+            let opts = {};
+            if (stampConfig && stampConfig.token) {
+                opts.auth = {
+                    bearer: stampConfig.token
+                };
+            }
+            // console.log('Workspace|Utils|getStampStatus|response: ' + JSON.stringify(opts));
+            let result = yield exports.httpHead(`${stampConfig.admission}/admission/deployments`, opts);
+            // console.log('Workspace|Utils|getStampStatus|response: ' + result.body);
             if (result.statusCode == 200) {
                 return {
                     successful: true,
@@ -112,13 +140,17 @@ function writeEmptyConfigFile() {
         "working-stamp": "localstamp",
         "domain": "domain.com",
         "component": {
-            "template": "typescript"
+            "template": "javascript"
         },
         "deployment": {
             "template": "basic"
         },
+        "resource": {
+            "template": "vhost"
+        },
         "runtime": {
-            "parent": "eslap://eslap.cloud/runtime/native/1_1_1",
+            "template": "basic",
+            "parent": "eslap://eslap.cloud/runtime/native/2_0_0",
             "folder": "/eslap/component",
             "entrypoint": "/eslap/runtime-agent/scripts/start-runtime-agent.sh"
         },
@@ -126,14 +158,19 @@ function writeEmptyConfigFile() {
             "template": "basic"
         },
         "stamps": {
-            "localstamp": "http://localhost:8090"
+            "localstamp": {
+                "admission": "http://localhost:8090"
+            },
+            "baco": {
+                "admission": "https://admission.baco.kumori.cloud"
+            }
         }
     };
     overwriteConfigFile(config);
 }
 exports.writeEmptyConfigFile = writeEmptyConfigFile;
 function overwriteConfigFile(newConfig) {
-    fs.writeFileSync('kazeConfig.json', JSON.stringify(newConfig, null, 4));
+    fs.writeFileSync(exports.configuration.configFileName, JSON.stringify(newConfig, null, 4));
 }
 exports.overwriteConfigFile = overwriteConfigFile;
 function setupQuestionForTest() {
@@ -143,18 +180,18 @@ function setupQuestionForTest() {
 }
 exports.setupQuestionForTest = setupQuestionForTest;
 function readConfigFile() {
-    const configPath = path.join(process.cwd(), 'kazeConfig.json');
+    const configPath = path.join(process.cwd(), exports.configuration.configFileName);
     let data = fs.readFileSync(require.resolve(configPath));
     return JSON.parse(data.toString());
 }
 exports.readConfigFile = readConfigFile;
 function startupCheck() {
-    const configPath = path.join(process.cwd(), 'kazeConfig.json');
+    const configPath = path.join(process.cwd(), exports.configuration.configFileName);
     if (fs.existsSync(configPath)) {
         return readConfigFile();
     }
     else {
-        console.error('You need to initialize first current workspace by running "kaze init"');
+        console.error('You need to initialize first current workspace by using the "init" command');
         process.exit(1);
     }
 }
@@ -164,34 +201,22 @@ function getStampUrl(stamp) {
     let stampName = stamp ? stamp : config['working-stamp'];
     let stampUrl = undefined;
     if (stampName && config.stamps && config.stamps[stampName]) {
-        stampUrl = config.stamps[stampName];
+        stampUrl = config.stamps[stampName].admission;
     }
     return stampUrl;
 }
 exports.getStampUrl = getStampUrl;
 function processDeploymentsInfo(dep) {
-    console.log(`\nDeployment "${dep.deploymentURN}" data:\n`);
+    console.log(`\nDeployment "${dep.urn}" data:\n`);
     let depResult = {
-        name: dep.deploymentURN,
+        name: dep.urn,
         entrypoints: []
     };
-    console.log(`* Deployment URN: ${dep.deploymentURN}`);
-    if (dep.portMapping) {
-        for (let ep of dep.portMapping) {
-            let entrypoint = {
-                iid: ep.iid,
-                role: ep.role,
-                endpoint: ep.endpoint,
-                port: ep.port
-            };
-            depResult.entrypoints.push(entrypoint);
-            console.log(`* Deployment entrypoint for "${ep.iid}-${ep.role}-${ep.endpoint}": http://localhost:${ep.port}`);
-        }
-    }
-    else if (dep.topology && dep.topology.roles) {
-        for (let role of Object.keys(dep.topology.roles)) {
-            if (dep.topology.roles[role].entrypoint && dep.topology.roles[role].entrypoint.domain) {
-                let epUrl = dep.topology.roles[role].entrypoint.domain;
+    console.log(`* Deployment URN: ${dep.urn}`);
+    if (dep.roles) {
+        for (let role in dep.roles) {
+            if (dep.roles[role].entrypoint && dep.roles[role].entrypoint.domain) {
+                let epUrl = dep.roles[role].entrypoint.domain;
                 let entrypoint = {
                     role: role,
                     domain: epUrl
@@ -314,7 +339,6 @@ function applyTemplate(file, source, destination, config) {
             let relative = file.substring(source.length + 1);
             console.log('relative ', relative);
             let destFile = `${destination}/${relative.substring(0, relative.length - 4)}`;
-            console.log('destFile ', destFile);
             let readStream = fs.createReadStream(file);
             let writeStream = fs.createWriteStream(destFile);
             let data = '';
@@ -518,7 +542,7 @@ function createBundleFile(targetFile, sourceFiles) {
                     archive.directory(filepath, `${folder}`);
                 }
             }
-            // Finalize the archive (ie we are done appending files but streams have to 
+            // Finalize the archive (ie we are done appending files but streams have to
             // finish yet)
             // 'close', 'end' or 'finish' may be fired right after calling this method so
             // register to them beforehand

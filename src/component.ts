@@ -15,12 +15,12 @@ export class Component {
   private rootPath: string;
   private templatesPath: string;
   private workspacePath: string;
-  
+
   constructor(workspacePath?: string, templatesPath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/components`;
     // this.templatesPath = (templatesPath ? templatesPath : path.join(__dirname,'../../template/component'));
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','component'));    
+    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','component'));
   }
 
   public add(template: string, config: ComponentConfig): Promise<string> {
@@ -39,7 +39,7 @@ export class Component {
       } catch(error) {
         reject(error);
       }
-    });  
+    });
   }
 
   public install(config: ComponentConfig, rootPath?: string): Promise<string> {
@@ -72,7 +72,7 @@ export class Component {
       }
     })
     .then(() => {
-      return `${componentRootPath}/dist/build.zip`;
+      return `${componentRootPath}/dist/bundle.zip`;
     })
   }
 
@@ -139,7 +139,7 @@ export class Component {
       }
     })
 
-  } 
+  }
 
   // public checkVersion(config: ComponentConfig): Promise<boolean> {
   //   return new Promise((resolve, reject) => {
@@ -195,7 +195,7 @@ export class Component {
       } catch(error) {
         reject(error);
       }
-    })    
+    })
   }
 
 }

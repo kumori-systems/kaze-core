@@ -2,8 +2,10 @@ import * as path from 'path';
 import * as utils from './utils';
 import { bundleCommand } from './bundle';
 import * as fs from 'fs';
+import { Stamp } from './stamp';
 
 export async function registerCommand(paths: string[], stamp: string): Promise<any> {
+  let stampStub = new Stamp();
   let response = {
     successful: [],
     errors: [],
@@ -28,49 +30,34 @@ export async function registerCommand(paths: string[], stamp: string): Promise<a
         console.warn(`${_path} is pointing to neither a directory nor zip. Skipping.`);
       }
 
-      if (bundlePath) {  
-        let result = await utils.stampPost(bundlePath, stamp, 'register');
-        if (result && result.data) {
-          if (result.success) {
-            console.log(`${_path} registered`);
-          } else {
-            console.log(`${_path} registration failed`);
+      if (bundlePath) {
+        // let result = await utils.stampPost(bundlePath, stamp, 'register');
+        let result = await stampStub.register(stamp, bundlePath);
+        if (result) {
+          if (result.successful) {
+            response.successful = response.successful.concat(result.successful);
           }
-          if (result.data.successful) {
-            response.successful = response.successful.concat(result.data.successful);
-          }
-          if (result.data.errors && result.data.errors.length > 0) {
-            response.errors = response.errors.concat(result.data.errors);
-            for (let e of result.data.errors) {
+          if (result.errors && result.errors.length > 0) {
+            response.errors = response.errors.concat(result.errors);
+            for (let e of result.errors) {
               let index = e.indexOf(":");
               let mes = e.substring(index+1);
               console.log(`Error: ${mes}`);
             }
           }
-          if (result.data.deployments) {
-            if (result.data.deployments.successful) {
+          if (result.deployments) {
+            if (result.deployments.successful) {
               // response.successful = response.successful.concat(result.data.deployments.successful);
-              for (let dep of result.data.deployments.successful) {
+              for (let dep of result.deployments.successful) {
                 let depResult = {
-                  name: dep.deploymentURN,
+                  name: dep.urn,
                   entrypoints: []
                 }
-                console.log(`New deployment URN: ${dep.deploymentURN}`);
-                if (dep.portMapping) {
-                  for (let ep of dep.portMapping) {
-                    let entrypoint = {
-                      iid: ep.iid,
-                      role: ep.role,
-                      endpoint: ep.endpoint,
-                      port: ep.port
-                    }
-                    depResult.entrypoints.push(entrypoint);
-                    console.log(`New deployment entrypoint: ${ep.iid}-${ep.role}-${ep.endpoint}:${ep.port}`);
-                  }
-                } else if (dep.topology && dep.topology.roles) {
-                  for (let role of Object.keys(dep.topology.roles)) {
-                    if (dep.topology.roles[role].entrypoint && dep.topology.roles[role].entrypoint.domain) { 
-                      let epUrl = dep.topology.roles[role].entrypoint.domain;
+                console.log(`New deployment URN: ${dep.urn}`);
+                if (dep.roles) {
+                  for (let role in dep.roles) {
+                    if (dep.roles[role].entrypoint && dep.roles[role].entrypoint.domain) {
+                      let epUrl = dep.roles[role].entrypoint.domain;
                       let entrypoint = {
                         role: role,
                         domain: epUrl
@@ -83,9 +70,9 @@ export async function registerCommand(paths: string[], stamp: string): Promise<a
                 response.deployments.push(depResult);
               }
             }
-            if (result.data.deployments.errors && result.data.deployments.errors.length > 0) {
-              response.errors = response.errors.concat(result.data.deployments.errors);
-              for (let e of result.data.deployments.errors) {
+            if (result.deployments.errors && result.deployments.errors.length > 0) {
+              response.errors = response.errors.concat(result.deployments.errors);
+              for (let e of result.deployments.errors) {
                 let index = e.indexOf(":");
                 let mes = e.substring(index+1);
                 console.log(`Error: ${mes}`);

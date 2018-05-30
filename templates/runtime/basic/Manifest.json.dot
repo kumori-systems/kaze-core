@@ -1,6 +1,9 @@
 {
   "spec": "http://eslap.cloud/manifest/runtime/1_0_0",
   "name": "eslap://{{=it.domain}}/runtime/{{=it.name}}/0_0_1",
+  "derived" : {
+    "from" : "{{=it.parent}}"
+  },
   "agent": "eslap://eslap.cloud/runtime-agent/1_0_0",
   "sourcedir": "{{=it.source || '/eslap/component'}}",
   "entrypoint": "{{=it.entrypoint || '/eslap/runtime-agent/scripts/start-runtime-agent.sh'}}"

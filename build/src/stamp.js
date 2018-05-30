@@ -4,42 +4,56 @@ const utils = require("./utils");
 const admission_client_1 = require("admission-client");
 const fs_1 = require("fs");
 class Stamp {
-    add(id, url, setAsWorking, force, config) {
-        if (!force && config['stamps'][id]) {
-            console.error(`kazeConfig.json already has a stamp with id: ${id}`);
+    add(id, stampConfig, defaultStamp) {
+        let workspaceConfig = utils.readConfigFile();
+        if (workspaceConfig['stamps'][id]) {
+            console.error(`${utils.configuration.configFileName} already has a stamp with id: ${id}`);
             return;
         }
-        if (setAsWorking || (force && config['working-stamp'] == config['stamps'][id])) {
-            config['working-stamp'] = id;
+        if (defaultStamp || (workspaceConfig['working-stamp'] == workspaceConfig['stamps'][id])) {
+            workspaceConfig['working-stamp'] = id;
         }
-        config['stamps'][id] = url;
-        utils.overwriteConfigFile(config);
+        let configCopy = Object.assign({}, stampConfig);
+        workspaceConfig['stamps'][id] = configCopy;
+        utils.overwriteConfigFile(workspaceConfig);
     }
-    remove(id, config) {
-        if (!config['stamps'][id]) {
-            console.error(`kazeConfig.json does not contain any stamp with id: ${id}`);
+    update(id, stampConfig) {
+        let workspaceConfig = utils.readConfigFile();
+        if (!workspaceConfig['stamps'][id]) {
+            console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
             return;
         }
-        if (config['working-stamp'] == id) {
+        let configCopy = Object.assign({}, stampConfig);
+        workspaceConfig['stamps'][id] = configCopy;
+        utils.overwriteConfigFile(workspaceConfig);
+    }
+    remove(id) {
+        let workspaceConfig = utils.readConfigFile();
+        if (!workspaceConfig['stamps'][id]) {
+            console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
+            return;
+        }
+        if (workspaceConfig['working-stamp'] == id) {
             console.error('Cannot remove working stamp, please run first kaze switch <stamp-id>');
             return;
         }
-        delete config['stamps'][id];
-        utils.overwriteConfigFile(config);
+        delete workspaceConfig['stamps'][id];
+        utils.overwriteConfigFile(workspaceConfig);
     }
-    switch(id, config) {
-        if (!config['stamps'][id]) {
-            console.error(`kazeConfig.json does not contain any stamp with id: ${id}`);
+    use(id) {
+        let workspaceConfig = utils.readConfigFile();
+        if (!workspaceConfig['stamps'][id]) {
+            console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
             return;
         }
-        config['working-stamp'] = id;
-        utils.overwriteConfigFile(config);
+        workspaceConfig['working-stamp'] = id;
+        utils.overwriteConfigFile(workspaceConfig);
     }
     // Checks if a given element is registered in a given stamp.
     // TODO: to be implemented. Right now always returns `false`.
     //
     // Parameters:
-    // * `stamp`: the stamp id as introduced in kazeConfig.json.
+    // * `stamp`: the stamp id as introduced in configuration file.
     // * `name`: the URN of the element to be checked.
     //
     // Returns: `true` if the element is registered in the stamp, `false`
@@ -52,11 +66,14 @@ class Stamp {
             if (!name) {
                 return Promise.reject(new Error('Element name parameter is missing'));
             }
-            let stampUrl = utils.getStampUrl(stamp);
-            if (!stampUrl) {
+            let workspaceConfig = utils.readConfigFile();
+            let stampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp];
+            if (!stampConfig) {
                 return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
             }
-            let admission = new admission_client_1.AdmissionClient(`${stampUrl}/admission`);
+            let admissionUrl = stampConfig.admission;
+            let token = stampConfig.token;
+            let admission = new admission_client_1.AdmissionClient(`${admissionUrl}/admission`, token);
             return admission.findStorage()
                 .then((result) => {
                 for (let element of result) {
@@ -77,10 +94,26 @@ class Stamp {
         }
         // return Promise.resolve(false);
     }
+    get(stamp) {
+        let workspaceConfig = utils.readConfigFile();
+        if ((!stamp) || (!workspaceConfig.stamps[stamp])) {
+            throw new Error("Stamp not registered");
+        }
+        return workspaceConfig.stamps[stamp];
+    }
+    isDefault(name) {
+        if ((!name) || (name.length == 0)) {
+            return false;
+        }
+        else {
+            let workspaceConfig = utils.readConfigFile();
+            return (name.localeCompare(workspaceConfig["working-stamp"]) == 0);
+        }
+    }
     // Registers a bundle in a stamp using AdmissionClient.
     //
     // Parameters:
-    // * `stamp`: the stamp id as rgistered in kazeConfig.json.
+    // * `stamp`: the stamp id as rgistered in configurationFile.
     // * `bundle`: the path to the bundle file.
     //
     // Returns: a RegistrationResult with the results.
@@ -92,13 +125,16 @@ class Stamp {
             if (!bundle) {
                 return Promise.reject(new Error('The path to the bundle parameter is missing'));
             }
-            let stampUrl = utils.getStampUrl(stamp);
-            if (!stampUrl) {
+            let workspaceConfig = utils.readConfigFile();
+            let stampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp];
+            if (!stampConfig) {
                 return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
             }
             return utils.access(bundle, fs_1.constants.R_OK)
                 .then(() => {
-                let admission = new admission_client_1.AdmissionClient(`${stampUrl}/admission`);
+                let admissionUrl = stampConfig.admission;
+                let token = stampConfig.token;
+                let admission = new admission_client_1.AdmissionClient(`${admissionUrl}/admission`, token);
                 let stream = fs_1.createReadStream(bundle);
                 let fileStream = new admission_client_1.FileStream(stream);
                 return admission.sendBundle(fileStream);

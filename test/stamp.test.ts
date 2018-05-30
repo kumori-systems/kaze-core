@@ -19,11 +19,11 @@ describe('Stamp command', () => {
   });
 
   after(() => {
-    cp.execSync('rm -f kazeConfig.json');
+    cp.execSync('rm -f kumoriConfig.json');
   });
 
   describe('add subcommand', () => {
-    it('should add a new stamp with <id> and <url> to kazeConfig.json', () => {
+    it('should add a new stamp with <id> and <url> to kumoriConfig.json', () => {
       workspace.stamp.add('id1', 'url1', undefined, undefined, defaultConfig);
       should(readConfigFile()).have.property('stamps').with.properties({ 'id1': 'url1' });
     });

@@ -104,11 +104,14 @@ class Deployment {
     //
     // Returns a promise resolved with a message.
     scaleRole(name, role, numInstances, stamp) {
-        let stampUrl = utils_1.getStampUrl(stamp);
-        if (!stampUrl) {
+        let workspaceConfig = utils_1.readConfigFile();
+        let stampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp];
+        if (!stampConfig) {
             return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
         }
-        let admission = new admission_client_1.AdmissionClient(`${stampUrl}/admission`);
+        let admissionUrl = stampConfig.admission;
+        let token = stampConfig.token;
+        let admission = new admission_client_1.AdmissionClient(`${admissionUrl}/admission`, token);
         let modification = new admission_client_1.ScalingDeploymentModification();
         modification.deploymentURN = name;
         modification.scaling = {};
@@ -117,6 +120,17 @@ class Deployment {
             .then((value) => {
             return `Result: ${value}`;
         });
+    }
+    undeploy(name, stamp) {
+        let workspaceConfig = utils_1.readConfigFile();
+        let stampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp];
+        if (!stampConfig) {
+            return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
+        }
+        let admissionUrl = stampConfig.admission;
+        let token = stampConfig.token;
+        let admission = new admission_client_1.AdmissionClient(`${admissionUrl}/admission`, token);
+        return admission.undeploy(name);
     }
     // Calculates de deployment resources from the service resources.
     createDeploymentResources(config) {
@@ -190,7 +204,7 @@ class Deployment {
         return component.getParameters(config);
     }
     // Gets a list of Parameter and calculates its default value. This is a
-    // generator function. 
+    // generator function.
     *processParametersDefaultValues(parameters) {
         for (let param of parameters) {
             switch (param.type) {

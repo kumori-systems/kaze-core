@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const utils = require("./utils");
 const bundle_1 = require("./bundle");
 const fs = require("fs");
+const stamp_1 = require("./stamp");
 function registerCommand(paths, stamp) {
     return __awaiter(this, void 0, void 0, function* () {
+        let stampStub = new stamp_1.Stamp();
         let response = {
             successful: [],
             errors: [],
@@ -41,50 +42,33 @@ function registerCommand(paths, stamp) {
                     console.warn(`${_path} is pointing to neither a directory nor zip. Skipping.`);
                 }
                 if (bundlePath) {
-                    let result = yield utils.stampPost(bundlePath, stamp, 'register');
-                    if (result && result.data) {
-                        if (result.success) {
-                            console.log(`${_path} registered`);
+                    // let result = await utils.stampPost(bundlePath, stamp, 'register');
+                    let result = yield stampStub.register(stamp, bundlePath);
+                    if (result) {
+                        if (result.successful) {
+                            response.successful = response.successful.concat(result.successful);
                         }
-                        else {
-                            console.log(`${_path} registration failed`);
-                        }
-                        if (result.data.successful) {
-                            response.successful = response.successful.concat(result.data.successful);
-                        }
-                        if (result.data.errors && result.data.errors.length > 0) {
-                            response.errors = response.errors.concat(result.data.errors);
-                            for (let e of result.data.errors) {
+                        if (result.errors && result.errors.length > 0) {
+                            response.errors = response.errors.concat(result.errors);
+                            for (let e of result.errors) {
                                 let index = e.indexOf(":");
                                 let mes = e.substring(index + 1);
                                 console.log(`Error: ${mes}`);
                             }
                         }
-                        if (result.data.deployments) {
-                            if (result.data.deployments.successful) {
+                        if (result.deployments) {
+                            if (result.deployments.successful) {
                                 // response.successful = response.successful.concat(result.data.deployments.successful);
-                                for (let dep of result.data.deployments.successful) {
+                                for (let dep of result.deployments.successful) {
                                     let depResult = {
-                                        name: dep.deploymentURN,
+                                        name: dep.urn,
                                         entrypoints: []
                                     };
-                                    console.log(`New deployment URN: ${dep.deploymentURN}`);
-                                    if (dep.portMapping) {
-                                        for (let ep of dep.portMapping) {
-                                            let entrypoint = {
-                                                iid: ep.iid,
-                                                role: ep.role,
-                                                endpoint: ep.endpoint,
-                                                port: ep.port
-                                            };
-                                            depResult.entrypoints.push(entrypoint);
-                                            console.log(`New deployment entrypoint: ${ep.iid}-${ep.role}-${ep.endpoint}:${ep.port}`);
-                                        }
-                                    }
-                                    else if (dep.topology && dep.topology.roles) {
-                                        for (let role of Object.keys(dep.topology.roles)) {
-                                            if (dep.topology.roles[role].entrypoint && dep.topology.roles[role].entrypoint.domain) {
-                                                let epUrl = dep.topology.roles[role].entrypoint.domain;
+                                    console.log(`New deployment URN: ${dep.urn}`);
+                                    if (dep.roles) {
+                                        for (let role in dep.roles) {
+                                            if (dep.roles[role].entrypoint && dep.roles[role].entrypoint.domain) {
+                                                let epUrl = dep.roles[role].entrypoint.domain;
                                                 let entrypoint = {
                                                     role: role,
                                                     domain: epUrl
@@ -97,9 +81,9 @@ function registerCommand(paths, stamp) {
                                     response.deployments.push(depResult);
                                 }
                             }
-                            if (result.data.deployments.errors && result.data.deployments.errors.length > 0) {
-                                response.errors = response.errors.concat(result.data.deployments.errors);
-                                for (let e of result.data.deployments.errors) {
+                            if (result.deployments.errors && result.deployments.errors.length > 0) {
+                                response.errors = response.errors.concat(result.deployments.errors);
+                                for (let e of result.deployments.errors) {
                                     let index = e.indexOf(":");
                                     let mes = e.substring(index + 1);
                                     console.log(`Error: ${mes}`);

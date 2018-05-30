@@ -23,11 +23,11 @@ function initCommand(templatesPath) {
                 for (let dir of stdDirs) {
                     utils.createPath(dir);
                 }
-                if (fs.existsSync('kazeConfig.json')) {
-                    console.log('"kazeConfig.json" already exists, skipping.');
+                if (fs.existsSync(utils.configuration.configFileName)) {
+                    console.log(`"${utils.configuration.configFileName}" already exists, skipping.`);
                 }
                 else {
-                    console.log('Initializing "kazeConfig.json" for this workspace...');
+                    console.log(`Initializing ${utils.configuration.configFileName} for this workspace...`);
                     utils.writeEmptyConfigFile();
                 }
                 let destination = path.join(`${process.cwd()}`, 'templates');

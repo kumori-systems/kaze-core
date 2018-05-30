@@ -11,7 +11,7 @@ import * as path from 'path';
 
 process.env.NODE_ENV = 'test';
 
-const KAZE_CONFIG = `${process.env.PWD}/kazeConfig.json`;
+const KAZE_CONFIG = `${process.env.PWD}/kumoriConfig.json`;
 const SERVICES_DIR = `${process.env.PWD}/services`;
 
 
@@ -26,7 +26,7 @@ describe('Service command tests', () => {
     try {
       let stats = fs.statSync(SERVICES_DIR);
       if (stats.isDirectory()) {
-        rimraf.sync(SERVICES_DIR);        
+        rimraf.sync(SERVICES_DIR);
       } else {
         error = new Error(`${SERVICES_DIR} is not a folder`);
       }
@@ -38,7 +38,7 @@ describe('Service command tests', () => {
       if (stats.isFile()) {
         rimraf.sync(KAZE_CONFIG);
       } else {
-        error = new Error(`${KAZE_CONFIG} is not a file`);        
+        error = new Error(`${KAZE_CONFIG} is not a file`);
       }
     } catch(err) {
       error = err;
@@ -49,7 +49,7 @@ describe('Service command tests', () => {
       done();
     }
   });
-    
+
   it('Create new service', (done) => {
     try {
       let config = {

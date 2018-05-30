@@ -2,7 +2,7 @@
   "spec": "http://eslap.cloud/manifest/deployment/1_0_0",
   "servicename": "eslap://{{=it.service.domain}}/services/{{=it.service.name}}/{{=it.service.version}}",
   "name": "{{=it.name}}",
-  "interconnection": false,
+  "nickname": "{{=it.name}}",
   "configuration": {
     "resources": {
       {{
@@ -15,7 +15,7 @@
             out += ',\n';
           }
         }
-      }} 
+      }}
     },
     "parameters": {
       {{

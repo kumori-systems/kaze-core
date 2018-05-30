@@ -1,9 +1,9 @@
-import { Parameter, ParameterType, Resource, ResourceType, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON, getStampUrl } from './utils';
+import { Parameter, ParameterType, Resource, ResourceType, StampConfig, readConfigFile, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON } from './utils';
 import * as path from 'path';
 import { Role, Service, ServiceConfig } from './service';
 import { Component, ComponentConfig } from './component';
 import { access, constants } from 'fs';
-import { AdmissionClient, ScalingDeploymentModification } from 'admission-client';
+import { AdmissionClient, ScalingDeploymentModification, DeploymentInstanceInfo } from 'admission-client';
 
 export interface DeploymentConfig {
   name: string,
@@ -15,12 +15,12 @@ export class Deployment {
   private rootPath: string;
   private templatesPath: string;
   private workspacePath: string;
-  
+
   constructor(workspacePath?: string, templatesPath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/deployments`;
     // this.templatesPath = (templatesPath ? templatesPath : path.join(__dirname,'../../template/deployment'));
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','deployment'));    
+    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','deployment'));
   }
 
   public add(template: string, config: DeploymentConfig): Promise<string> {
@@ -61,7 +61,7 @@ export class Deployment {
       } catch(error) {
         reject(error);
       }
-    });  
+    });
   }
 
   public getManifest(name: string): any {
@@ -115,11 +115,14 @@ export class Deployment {
   //
   // Returns a promise resolved with a message.
   public scaleRole(name:string, role:string, numInstances: number, stamp: string): Promise<string> {
-    let stampUrl = getStampUrl(stamp);
-    if (!stampUrl) {
+    let workspaceConfig = readConfigFile();
+    let stampConfig:StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+    if (!stampConfig) {
       return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
     }
-    let admission = new AdmissionClient(`${stampUrl}/admission`);
+    let admissionUrl = stampConfig.admission
+    let token = stampConfig.token
+    let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
     let modification = new ScalingDeploymentModification();
     modification.deploymentURN = name;
     modification.scaling = {};
@@ -128,6 +131,18 @@ export class Deployment {
     .then((value) => {
       return `Result: ${value}`;
     })
+  }
+
+  public undeploy(name: string, stamp: string) {
+    let workspaceConfig = readConfigFile();
+    let stampConfig:StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+    if (!stampConfig) {
+      return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
+    }
+    let admissionUrl = stampConfig.admission
+    let token = stampConfig.token
+    let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+    return admission.undeploy(name)
   }
 
   // Calculates de deployment resources from the service resources.
@@ -143,7 +158,7 @@ export class Deployment {
     while (!elem.done) {
       let param = elem.value;
       processed.push(param);
-      elem = resourcesIt.next()                
+      elem = resourcesIt.next()
     }
     return processed;
   }
@@ -181,7 +196,7 @@ export class Deployment {
               value = `${value}\n        "${compParam.name}":${compParam.value}`;
               first = false;
             } else {
-              value = `,${value}\n        "${compParam.name}":${compParam.value},`;                    
+              value = `,${value}\n        "${compParam.name}":${compParam.value},`;
             }
             compElem = compParamsIt.next();
           }
@@ -191,7 +206,7 @@ export class Deployment {
         }
       }
       paramsProcessed.push(param);
-      elem = paramsIt.next()                
+      elem = paramsIt.next()
     }
     return paramsProcessed;
   }
@@ -204,7 +219,7 @@ export class Deployment {
   }
 
   // Gets a list of Parameter and calculates its default value. This is a
-  // generator function. 
+  // generator function.
   private *processParametersDefaultValues(parameters: Parameter[]) {
     for (let param of parameters) {
       switch (param.type) {
@@ -212,49 +227,49 @@ export class Deployment {
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : "false")            
+            value: (param.default ? param.default : "false")
           }
           break;
         case ParameterType.INTEGER:
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : "0")            
+            value: (param.default ? param.default : "0")
           }
           break;
         case ParameterType.JSON:
            yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : "{}")            
+            value: (param.default ? param.default : "{}")
           }
           break;
         case ParameterType.LIST:
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : "[]")            
+            value: (param.default ? param.default : "[]")
           }
           break;
         case ParameterType.NUMBER:
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : "0")           
+            value: (param.default ? param.default : "0")
           }
           break;
         case ParameterType.STRING:
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : '""')            
+            value: (param.default ? param.default : '""')
           }
           break;
         case ParameterType.VHOST:
           yield {
             name: param.name,
             type: param.type,
-            value: (param.default ? param.default : '""')            
+            value: (param.default ? param.default : '""')
           }
           break;
       }
@@ -268,42 +283,42 @@ export class Deployment {
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
         case ResourceType.CERT_SERVER:
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
         case ResourceType.FAULT_GROUP:
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
         case ResourceType.VHOST:
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
         case ResourceType.VOLUME_PERSITENT:
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
         case ResourceType.VOLUME_VOLATILE:
           yield {
             name: res.name,
             type: res.type,
-            value: '""'           
+            value: '""'
           }
           break;
       }

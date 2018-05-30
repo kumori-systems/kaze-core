@@ -9,6 +9,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("./utils");
+const admission_client_1 = require("admission-client");
+function getDeployments(stamp) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let workspaceConfig = utils.readConfigFile();
+        let stampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp];
+        if (!stampConfig) {
+            return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
+        }
+        let admissionUrl = stampConfig.admission;
+        let token = stampConfig.token;
+        let admission = new admission_client_1.AdmissionClient(`${admissionUrl}/admission`, token);
+        let deployments = yield admission.findDeployments();
+        for (let depName in deployments) {
+            let deployment = deployments[depName];
+            console.log(`\n-------------------------------------------------------------------------------------`);
+            console.log(`Deployment URN:\t\t${deployment.urn}`);
+            if (deployment.nickname) {
+                console.log(`Deployment nickname:\t\t${deployment.urn}`);
+            }
+            console.log(`Deployment roles:\t\t${Object.keys(deployment.roles).length}`);
+            for (let roleName in deployment.roles) {
+                let role = deployment.roles[roleName];
+                console.log(`\tRole "${roleName}"`);
+                console.log(`\t\tComponent: \t${role.component}`);
+                if (role.entrypoint && role.entrypoint.domain) {
+                    console.log(`\t\tEntrypoint: \t${role.entrypoint.domain}`);
+                }
+            }
+            console.log(`-------------------------------------------------------------------------------------`);
+        }
+    });
+}
 function infoCommand(requestedInfo, stamp) {
     return __awaiter(this, void 0, void 0, function* () {
         // Supported information retrieval
@@ -30,32 +62,12 @@ function infoCommand(requestedInfo, stamp) {
             });
         }
         try {
-            // console.log(`${stamp}/admission/${requestedInfo}`)
-            let raw = yield utils.httpGet({ uri: `${stamp}/admission/${requestedInfo}` });
-            let result = JSON.parse(raw.body);
-            if (result && result.data) {
-                if (result.success) {
-                    console.log("Deployments information retrieval succeed");
-                }
-                else {
-                    console.log("Deployments information retrieval failed");
-                }
-                for (let depName in result.data) {
-                    if (result.data[depName] == null) {
-                        response.errors.push(`Deployment ${depName} not found`);
-                    }
-                    else {
-                        let depResult = utils.processDeploymentsInfo(result.data[depName]);
-                        response.deployments.push(depResult);
-                    }
-                }
-            }
-            console.log("");
+            yield getDeployments(stamp);
             return Promise.resolve(true);
         }
         catch (e) {
             return Promise.reject({
-                err: `Couldn't retrieve ${requestedInfo} informations from ${stamp}`,
+                err: `Couldn't retrieve ${requestedInfo} information from ${stamp}`,
                 additionalInfo: e
             });
         }

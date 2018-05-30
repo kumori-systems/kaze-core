@@ -10,6 +10,22 @@ import * as rimraf from 'rimraf';
 import * as vm from 'vm';
 import * as child_process from 'child_process';
 import * as archiver from 'archiver';
+import { Deployment } from 'admission-client';
+
+export const DEFAULT_CONFIG_FILE = 'kazeConfig.json'
+export const configuration = {
+  configFileName: DEFAULT_CONFIG_FILE
+}
+
+interface AdmissionOptions {
+  auth?: {
+    bearer?: string
+  }
+  uri?: string
+  formData?: {
+    bundlesZip?: fs.ReadStream
+  }
+}
 
 export let question = denodeify(read);
 export const mkdir = denodeify(mkdirp);
@@ -20,18 +36,32 @@ export const httpHead = denodeify(request.head);
 export const access = denodeify(fs.access);
 export const stampPost = async function register(path: string, stamp: string, op: string) {
   try {
-    const opts = {
-      uri: `${stamp}/admission/bundles`,
+    let workspaceConfig = readConfigFile();
+    let stampConfig:StampConfig = workspaceConfig.stamps[stamp]
+    if (!stampConfig) {
+      return Promise.reject({
+        err: `Stamp ${stamp} not found`
+      })
+    }
+    let opts: AdmissionOptions = {
+      uri: `${stampConfig.admission}/admission/bundles`,
       formData: {
         bundlesZip: fs.createReadStream(path)
       }
-    };
+    }
+    if (stampConfig && stampConfig.token) {
+      opts.auth = {
+        bearer: stampConfig.token
+      }
+    }
     let response = await httpPost(opts);
     let responseJson = JSON.parse(response.body);
+    // console.log('Workspace|Utils|stampPost|response: ' + response.body);
     return Promise.resolve(responseJson);
   } catch(error) {
     // console.log("Error:", error);
     let message = error.code ? error.code : (error.message ? error.message : error)
+    // console.error('Workspace|Utils|stampPost|Error: ' + message);
     return Promise.reject({
       err: `${op} operation failed in ${stamp}`,
       additionalInfo: message
@@ -42,6 +72,11 @@ export const stampPost = async function register(path: string, stamp: string, op
 export interface StampStatus {
   successful: boolean;
   code: number;
+}
+
+export interface StampConfig {
+  admission: string
+  token?: string
 }
 
 export async function checkStamp (stamp: string, exitOnFail: boolean = true): Promise<StampStatus> {
@@ -72,9 +107,19 @@ export async function checkStamp (stamp: string, exitOnFail: boolean = true): Pr
   return status;
 }
 
-export const getStampStatus = async function(path: string): Promise<StampStatus> {
+export const getStampStatus = async function(stamp: string): Promise<StampStatus> {
   try {
-    let result = await httpHead(`${path}/admission/deployments`);
+    let workspaceConfig = readConfigFile();
+    let stampConfig = workspaceConfig.stamps[stamp]
+    let opts: AdmissionOptions = {}
+    if (stampConfig && stampConfig.token) {
+      opts.auth = {
+        bearer: stampConfig.token
+      }
+    }
+    // console.log('Workspace|Utils|getStampStatus|response: ' + JSON.stringify(opts));
+    let result = await httpHead(`${stampConfig.admission}/admission/deployments`, opts);
+    // console.log('Workspace|Utils|getStampStatus|response: ' + result.body);
     if (result.statusCode == 200) {
       return {
         successful: true,
@@ -99,13 +144,17 @@ export function writeEmptyConfigFile() {
     "working-stamp": "localstamp",
     "domain": "domain.com",
     "component": {
-      "template": "typescript"
+      "template": "javascript"
     },
     "deployment": {
       "template": "basic"
     },
+    "resource": {
+      "template": "vhost"
+    },
     "runtime": {
-      "parent": "eslap://eslap.cloud/runtime/native/1_1_1",
+      "template": "basic",
+      "parent": "eslap://eslap.cloud/runtime/native/2_0_0",
       "folder": "/eslap/component",
       "entrypoint": "/eslap/runtime-agent/scripts/start-runtime-agent.sh"
     },
@@ -113,14 +162,19 @@ export function writeEmptyConfigFile() {
       "template": "basic"
     },
     "stamps": {
-      "localstamp": "http://localhost:8090"
+      "localstamp": {
+        "admission": "http://localhost:8090"
+      },
+      "baco": {
+        "admission": "https://admission.baco.kumori.cloud"
+      }
     }
   };
   overwriteConfigFile(config);
 }
 
 export function overwriteConfigFile(newConfig: any) {
-  fs.writeFileSync('kazeConfig.json', JSON.stringify(newConfig, null, 4));
+  fs.writeFileSync(configuration.configFileName, JSON.stringify(newConfig, null, 4));
 }
 
 export function setupQuestionForTest() {
@@ -130,17 +184,17 @@ export function setupQuestionForTest() {
 }
 
 export function readConfigFile() {
-  const configPath = path.join(process.cwd(), 'kazeConfig.json');
+  const configPath = path.join(process.cwd(), configuration.configFileName);
   let data = fs.readFileSync(require.resolve(configPath));
   return JSON.parse(data.toString());
 }
 
 export function startupCheck() {
-  const configPath = path.join(process.cwd(), 'kazeConfig.json');
+  const configPath = path.join(process.cwd(), configuration.configFileName);
   if (fs.existsSync(configPath)) {
-    return readConfigFile();    
+    return readConfigFile();
   } else {
-    console.error('You need to initialize first current workspace by running "kaze init"');
+    console.error('You need to initialize first current workspace by using the "init" command');
     process.exit(1);
   }
 }
@@ -150,33 +204,22 @@ export function getStampUrl(stamp: string): string {
   let stampName = stamp ? stamp : config['working-stamp']
   let stampUrl: string = undefined;
   if (stampName && config.stamps && config.stamps[stampName]) {
-    stampUrl = config.stamps[stampName];
+    stampUrl = config.stamps[stampName].admission;
   }
   return stampUrl;
 }
 
-export function processDeploymentsInfo(dep) {
-  console.log(`\nDeployment "${dep.deploymentURN}" data:\n`)
+export function processDeploymentsInfo(dep: Deployment) {
+  console.log(`\nDeployment "${dep.urn}" data:\n`)
   let depResult = {
-    name: dep.deploymentURN,
+    name: dep.urn,
     entrypoints: []
   }
-  console.log(`* Deployment URN: ${dep.deploymentURN}`);
-  if (dep.portMapping) {
-    for (let ep of dep.portMapping) {
-      let entrypoint = {
-        iid: ep.iid,
-        role: ep.role,
-        endpoint: ep.endpoint,
-        port: ep.port
-      }
-      depResult.entrypoints.push(entrypoint);
-      console.log(`* Deployment entrypoint for "${ep.iid}-${ep.role}-${ep.endpoint}": http://localhost:${ep.port}`);
-    }
-  } else if (dep.topology && dep.topology.roles) {
-    for (let role of Object.keys(dep.topology.roles)) {
-      if (dep.topology.roles[role].entrypoint && dep.topology.roles[role].entrypoint.domain) { 
-        let epUrl = dep.topology.roles[role].entrypoint.domain;
+  console.log(`* Deployment URN: ${dep.urn}`);
+  if (dep.roles) {
+    for (let role in dep.roles) {
+      if (dep.roles[role].entrypoint && dep.roles[role].entrypoint.domain) {
+        let epUrl = dep.roles[role].entrypoint.domain;
         let entrypoint = {
           role: role,
           domain: epUrl
@@ -223,17 +266,17 @@ export function parseEcloudURN(urn: string): ECloudNameParts {
   result.protocol = 'eslap';
 
   if (parts[1].length != 0) {
-    throw new Error(`URN "${urn}": wrong format`);   
+    throw new Error(`URN "${urn}": wrong format`);
   }
 
   if (parts[2].length == 0) {
-    throw new Error(`URN "${urn}": domain is empty`);   
+    throw new Error(`URN "${urn}": domain is empty`);
   }
 
   result.domain = parts[2];
 
   if (parts[3].length == 0) {
-    throw new Error(`URN "${urn}": wrong format`);   
+    throw new Error(`URN "${urn}": wrong format`);
   }
 
   result.type = parts[3];
@@ -245,11 +288,11 @@ export function parseEcloudURN(urn: string): ECloudNameParts {
   }
 
   if (result.path.length == 0) {
-    throw new Error(`URN "${urn}": wrong format`);   
+    throw new Error(`URN "${urn}": wrong format`);
   }
 
   if (parts[i].length == 0) {
-    throw new Error(`URN "${urn}": wrong version "${parts[i]}`);      
+    throw new Error(`URN "${urn}": wrong version "${parts[i]}`);
   }
 
   result.version = parts[i];
@@ -277,10 +320,10 @@ export function createElementFromTemplate(source: string, destination: string, c
 
   return new Promise((resolve, reject) => {
     try {
-      dot.templateSettings.strip = false;  
+      dot.templateSettings.strip = false;
 
       let templates = new Array();
-      
+
       let options = {
         filter: (filename) => {
           let ext = filename.substring(filename.length-4);
@@ -306,7 +349,7 @@ export function createElementFromTemplate(source: string, destination: string, c
           promises.push(applyTemplate(file, source, destination, config));
         }
         Promise.all(promises)
-        .then(() => {resolve();})     
+        .then(() => {resolve();})
         .catch((error) => {reject(error)});
       });
     } catch(error) {
@@ -321,7 +364,6 @@ function applyTemplate(file:string, source:string, destination:string, config:Ob
       let relative = file.substring(source.length+1);
       console.log('relative ', relative);
       let destFile = `${destination}/${relative.substring(0,relative.length-4)}`;
-      console.log('destFile ', destFile);
       let readStream = fs.createReadStream(file);
       let writeStream = fs.createWriteStream(destFile);
       let data = '';
@@ -360,7 +402,7 @@ export function deleteFolder(dir: string): boolean {
     }
   } catch(error) {
     return false;
-  } 
+  }
 }
 
 export function getJSON(filepath: string): any {
@@ -491,23 +533,23 @@ export function executeProgram(command: string, args:string[], options:child_pro
 
 // Creates the bundle file containing the manifest and the Docker runtime image
 export function createBundleFile(targetFile: string, sourceFiles: string[]): Promise<string> {
-  
+
     return new Promise((resolve, reject) => {
 
       try {
-  
+
         // Create an archiver and the output stream with the target file
         let archive = archiver('zip', {
           zlib: { level: 9 } // Sets the compression level.
         });
         let output = fs.createWriteStream(targetFile);
-    
+
         // listen for all archive data to be written
         // 'close' event is fired only when a file descriptor is involved
         output.on('close', function() {
           resolve(targetFile);
         });
-        
+
         // This event is fired when the data source is drained no matter what was the data source.
         // It is not part of this library but rather from the NodeJS Stream API.
         // @see: https://nodejs.org/api/stream.html#stream_event_end
@@ -515,20 +557,20 @@ export function createBundleFile(targetFile: string, sourceFiles: string[]): Pro
           // console.log('Data has been drained');
           resolve(targetFile);
         });
-        
+
         // Manages warnings (ie stat failures and other non-blocking errors)
         archive.on('warning', function(err) {
           reject(err);
         });
-        
+
         // Manages errors
         archive.on('error', function(err) {
           reject(err);
         });
-    
+
         // Pipes archive data to the file
         archive.pipe(output);
-    
+
         // Appends the files included in the bundle
         for (let i in sourceFiles) {
           let folder = `folder${i}`;
@@ -541,8 +583,8 @@ export function createBundleFile(targetFile: string, sourceFiles: string[]): Pro
             archive.directory(filepath, `${folder}`);
           }
         }
-    
-        // Finalize the archive (ie we are done appending files but streams have to 
+
+        // Finalize the archive (ie we are done appending files but streams have to
         // finish yet)
         // 'close', 'end' or 'finish' may be fired right after calling this method so
         // register to them beforehand

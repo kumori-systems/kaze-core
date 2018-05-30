@@ -12,8 +12,10 @@ const path = require("path");
 const utils = require("./utils");
 const bundle_1 = require("./bundle");
 const fs = require("fs");
+const stamp_1 = require("./stamp");
 function deployCommand(paths, stamp) {
     return __awaiter(this, void 0, void 0, function* () {
+        let stampStub = new stamp_1.Stamp();
         let response = {
             successful: [],
             errors: [],
@@ -41,39 +43,32 @@ function deployCommand(paths, stamp) {
                     console.warn(`${_path} is pointing to neither a directory nor zip. Skipping.`);
                 }
                 if (bundlePath) {
-                    let result = yield utils.stampPost(bundlePath, stamp, 'deploy');
-                    if (result && result.data) {
-                        if (result.success) {
-                            console.log(`${_path} registered`);
+                    // let result = await utils.stampPost(bundlePath, stamp, 'deploy');
+                    let result = yield stampStub.register(stamp, bundlePath);
+                    if (result.successful) {
+                        response.successful = response.successful.concat(result.successful);
+                    }
+                    if (result.errors && result.errors.length > 0) {
+                        response.errors = response.errors.concat(result.errors);
+                        for (let e of result.errors) {
+                            let index = e.indexOf(":");
+                            let mes = e.substring(index + 1);
+                            console.log(`Error: ${mes}`);
                         }
-                        else {
-                            console.log(`${_path} registration failed`);
+                    }
+                    if (result.deployments) {
+                        if (result.deployments.successful) {
+                            // response.successful = response.successful.concat(result.data.deployments.successful);
+                            for (let dep of result.deployments.successful) {
+                                let depResult = utils.processDeploymentsInfo(dep);
+                                response.deployments.push(depResult);
+                            }
                         }
-                        if (result.data.successful) {
-                            response.successful = response.successful.concat(result.data.successful);
-                        }
-                        if (result.data.errors && result.data.errors.length > 0) {
-                            response.errors = response.errors.concat(result.data.errors);
-                            for (let e of result.data.errors) {
-                                let index = e.indexOf(":");
-                                let mes = e.substring(index + 1);
+                        if (result.deployments.errors && result.deployments.errors.length > 0) {
+                            response.errors = response.errors.concat(result.deployments.errors);
+                            for (let e of result.deployments.errors) {
+                                let mes = (e.message) ? e.message : e;
                                 console.log(`Error: ${mes}`);
-                            }
-                        }
-                        if (result.data.deployments) {
-                            if (result.data.deployments.successful) {
-                                // response.successful = response.successful.concat(result.data.deployments.successful);
-                                for (let dep of result.data.deployments.successful) {
-                                    let depResult = utils.processDeploymentsInfo(dep);
-                                    response.deployments.push(depResult);
-                                }
-                            }
-                            if (result.data.deployments.errors && result.data.deployments.errors.length > 0) {
-                                response.errors = response.errors.concat(result.data.deployments.errors);
-                                for (let e of result.data.deployments.errors) {
-                                    let mes = (e.message) ? e.message : e;
-                                    console.log(`Error: ${mes}`);
-                                }
                             }
                         }
                     }

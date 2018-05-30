@@ -8,7 +8,7 @@ process.env.NODE_ENV = 'test';
 describe('Init command tests', () => {
   after(() => {
     cp.execSync('rmdir builts components dependencies deployments resources runtimes services tests');
-    cp.execSync('rm -rf kazeConfig.json');
+    cp.execSync('rm -rf kumoriConfig.json');
   })
 
   it('Init command creates properly all directories', done => {

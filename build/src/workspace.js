@@ -50,7 +50,6 @@ class Workspace {
             let manifest = this.deployment.getManifest(name);
             if (inboundsDomain) {
                 manifest.name = uuid_1.v4().replace("_", "-");
-                manifest.interconnection = true;
                 this.deployment.updateManifest(name, manifest);
             }
             return this.deployment.getDistributableFile(name)
@@ -127,8 +126,8 @@ class Workspace {
     info(requestedInfo, stamp) {
         return info_1.infoCommand(requestedInfo, stamp);
     }
-    init() {
-        return initialize_1.initCommand();
+    init(configFileName) {
+        return initialize_1.initCommand(configFileName);
     }
     register(paths, stamp) {
         return register_1.registerCommand(paths, stamp);

@@ -4,50 +4,67 @@ import { AdmissionClient, FileStream, RegistrationResult } from 'admission-clien
 import { createReadStream, access, constants } from 'fs';
 
 export class Stamp {
-  
-    public add(id: string, url: string, setAsWorking: boolean, force: boolean, config: any) {
-      if (!force && config['stamps'][id]) {
-        console.error(`kazeConfig.json already has a stamp with id: ${id}`);
+
+    public add(id: string, stampConfig: utils.StampConfig, defaultStamp: boolean) {
+      let workspaceConfig = utils.readConfigFile();
+      if (workspaceConfig['stamps'][id]) {
+        console.error(`${utils.configuration.configFileName} already has a stamp with id: ${id}`);
         return;
       }
-      if (setAsWorking || (force && config['working-stamp'] == config['stamps'][id])) {
-        config['working-stamp'] = id;
+      if (defaultStamp || (workspaceConfig['working-stamp'] == workspaceConfig['stamps'][id])) {
+        workspaceConfig['working-stamp'] = id;
       }
-    
-      config['stamps'][id] = url;
-    
-      utils.overwriteConfigFile(config);
+
+      let configCopy:utils.StampConfig = Object.assign({}, stampConfig);
+      workspaceConfig['stamps'][id] = configCopy;
+
+      utils.overwriteConfigFile(workspaceConfig);
     }
-  
-    public remove(id: string, config: any) {
-      if (!config['stamps'][id]) {
-        console.error(`kazeConfig.json does not contain any stamp with id: ${id}`);
+
+    public update(id: string, stampConfig: utils.StampConfig) {
+      let workspaceConfig = utils.readConfigFile();
+      if (!workspaceConfig['stamps'][id]) {
+        console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
         return;
       }
-    
-      if (config['working-stamp'] == id) {
+
+      let configCopy:utils.StampConfig = Object.assign({}, stampConfig);
+      workspaceConfig['stamps'][id] = configCopy;
+
+      utils.overwriteConfigFile(workspaceConfig);
+    }
+
+    public remove(id: string) {
+      let workspaceConfig = utils.readConfigFile();
+      if (!workspaceConfig['stamps'][id]) {
+        console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
+        return;
+      }
+
+      if (workspaceConfig['working-stamp'] == id) {
         console.error('Cannot remove working stamp, please run first kaze switch <stamp-id>');
         return;
       }
-    
-      delete config['stamps'][id];
-      utils.overwriteConfigFile(config);
+
+      delete workspaceConfig['stamps'][id];
+      utils.overwriteConfigFile(workspaceConfig);
     }
-  
-    public switch(id: string, config: any) {
-      if (!config['stamps'][id]) {
-        console.error(`kazeConfig.json does not contain any stamp with id: ${id}`);
+
+    public use(id: string) {
+      let workspaceConfig = utils.readConfigFile();
+      if (!workspaceConfig['stamps'][id]) {
+        console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
         return;
       }
-      config['working-stamp'] = id;
-      utils.overwriteConfigFile(config);
+      workspaceConfig['working-stamp'] = id;
+      utils.overwriteConfigFile(workspaceConfig);
     }
 
     // Checks if a given element is registered in a given stamp.
     // TODO: to be implemented. Right now always returns `false`.
     //
     // Parameters:
-    // * `stamp`: the stamp id as introduced in kazeConfig.json.
+    // * `stamp`: the stamp id as introduced in configuration file.
     // * `name`: the URN of the element to be checked.
     //
     // Returns: `true` if the element is registered in the stamp, `false`
@@ -58,14 +75,16 @@ export class Stamp {
           return Promise.reject(new Error('Stamp name parameter is missing'));
         }
         if (!name) {
-          return Promise.reject(new Error('Element name parameter is missing'));        
+          return Promise.reject(new Error('Element name parameter is missing'));
         }
-        let stampUrl = utils.getStampUrl(stamp);
-        if (!stampUrl) {
+        let workspaceConfig = utils.readConfigFile();
+        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+        if (!stampConfig) {
           return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
         }
-
-        let admission = new AdmissionClient(`${stampUrl}/admission`);
+        let admissionUrl = stampConfig.admission
+        let token = stampConfig.token
+        let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
         return admission.findStorage()
         .then((result) => {
           for (let element of result) {
@@ -78,7 +97,7 @@ export class Stamp {
         .catch((error) => {
           let message = ((error && error.message) ? error.message : error.toString());
           return Promise.reject(`Error searching for ${name} in ${stamp}: ${message}`);
-        })           
+        })
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());
         return Promise.reject(`Error searching for ${name} in ${stamp}: ${message}`);
@@ -86,10 +105,27 @@ export class Stamp {
       // return Promise.resolve(false);
     }
 
+    public get(stamp: string): utils.StampConfig {
+      let workspaceConfig = utils.readConfigFile();
+      if ((!stamp) || (!workspaceConfig.stamps[stamp])) {
+        throw new Error("Stamp not registered");
+      }
+      return workspaceConfig.stamps[stamp]
+    }
+
+    public isDefault(name: string): boolean {
+      if ((!name) || (name.length == 0)) {
+        return false
+      } else {
+        let workspaceConfig = utils.readConfigFile();
+        return (name.localeCompare(workspaceConfig["working-stamp"]) == 0)
+      }
+    }
+
     // Registers a bundle in a stamp using AdmissionClient.
     //
     // Parameters:
-    // * `stamp`: the stamp id as rgistered in kazeConfig.json.
+    // * `stamp`: the stamp id as rgistered in configurationFile.
     // * `bundle`: the path to the bundle file.
     //
     // Returns: a RegistrationResult with the results.
@@ -99,26 +135,29 @@ export class Stamp {
           return Promise.reject(new Error('Stamp name parameter is missing'));
         }
         if (!bundle) {
-          return Promise.reject(new Error('The path to the bundle parameter is missing'));        
+          return Promise.reject(new Error('The path to the bundle parameter is missing'));
         }
-        let stampUrl = utils.getStampUrl(stamp);
-        if (!stampUrl) {
+        let workspaceConfig = utils.readConfigFile();
+        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+        if (!stampConfig) {
           return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
         }
 
         return utils.access(bundle, constants.R_OK)
         .then(() => {
-          let admission = new AdmissionClient(`${stampUrl}/admission`);
+          let admissionUrl = stampConfig.admission
+          let token = stampConfig.token
+          let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
           let stream = createReadStream(bundle);
           let fileStream = new FileStream(stream);
-          return admission.sendBundle(fileStream);    
+          return admission.sendBundle(fileStream);
         }, (error) => {
-          return Promise.reject(`Bundle ${bundle} not available in the workspace`);          
+          return Promise.reject(`Bundle ${bundle} not available in the workspace`);
         })
         .catch((error) => {
           let message = ((error && error.message) ? error.message : error.toString());
           return Promise.reject(`Error registering ${bundle} in ${stamp}: ${message}`);
-        })           
+        })
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());
         return Promise.reject(`Error registering ${bundle} in ${stamp}: ${message}`);

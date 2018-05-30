@@ -12,7 +12,7 @@ import * as path from 'path';
 
 process.env.NODE_ENV = 'test';
 
-const KAZE_CONFIG = `${process.env.PWD}/kazeConfig.json`;
+const KAZE_CONFIG = `${process.env.PWD}/kumoriConfig.json`;
 const DEPLOYMENTS_DIR = `${process.env.PWD}/deployments`;
 const SERVICES_DIR = `${process.env.PWD}/services`;
 const COMPONENTS_DIR = `${process.env.PWD}/components`;
@@ -118,18 +118,18 @@ describe('Deployment command tests', () => {
   after((done) => {
     let error:Error = undefined;
     let folders = [DEPLOYMENTS_DIR, SERVICES_DIR, COMPONENTS_DIR];
-    
+
     for (let folder of folders) {
       try {
         let stats = fs.statSync(folder);
         if (stats.isDirectory()) {
-          rimraf.sync(folder);        
+          rimraf.sync(folder);
         } else {
           error = new Error(`${folder} is not a folder`);
         }
       } catch(err) {
         error = err;
-      }        
+      }
     }
 
     try {
@@ -137,7 +137,7 @@ describe('Deployment command tests', () => {
       if (stats.isFile()) {
         rimraf.sync(KAZE_CONFIG);
       } else {
-        error = new Error(`${KAZE_CONFIG} is not a file`);        
+        error = new Error(`${KAZE_CONFIG} is not a file`);
       }
     } catch(err) {
       error = err;
@@ -148,7 +148,7 @@ describe('Deployment command tests', () => {
       done();
     }
   });
-    
+
   it('Create new deployment', (done) => {
     try {
       let config = {
@@ -172,7 +172,7 @@ describe('Deployment command tests', () => {
           "__ioperf": 1,
           "__iopsintensive": false,
           "__bandwidth": 1,
-          "__resilience": 1      
+          "__resilience": 1
         }
         assert.deepEqual(manifest.roles.role1.resources, roleResources);
         assert.deepEqual(manifest.roles.role2.resources, roleResources);
@@ -186,7 +186,7 @@ describe('Deployment command tests', () => {
           "avhost": "",
           "role1": {
             "astring":""
-          }          
+          }
         }
         assert.deepEqual(manifest.configuration.parameters, parameters);
         let resources = {

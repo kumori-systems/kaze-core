@@ -11,7 +11,7 @@ import * as path from 'path';
 
 process.env.NODE_ENV = 'test';
 
-const KAZE_CONFIG = './kazeConfig.json';
+const KAZE_CONFIG = './kumoriConfig.json';
 const COMPONENTS_DIR = './components';
 const TEMPLATES_DIR = './templates';
 
@@ -25,18 +25,18 @@ describe('Components command tests', () => {
   after((done) => {
     let error:Error = undefined;
     let folders = [ COMPONENTS_DIR ];
-    
+
     for (let folder of folders) {
       try {
         let stats = fs.statSync(folder);
         if (stats.isDirectory()) {
-          rimraf.sync(folder);        
+          rimraf.sync(folder);
         } else {
           error = new Error(`${folder} is not a folder`);
         }
       } catch(err) {
         error = err;
-      }        
+      }
     }
 
     try {
@@ -44,7 +44,7 @@ describe('Components command tests', () => {
       if (stats.isFile()) {
         rimraf.sync(KAZE_CONFIG);
       } else {
-        error = new Error(`${KAZE_CONFIG} is not a file`);        
+        error = new Error(`${KAZE_CONFIG} is not a file`);
       }
     } catch(err) {
       error = err;
@@ -55,7 +55,7 @@ describe('Components command tests', () => {
       done();
     }
   });
-    
+
   it('Create new component', (done) => {
     try {
       let config = {

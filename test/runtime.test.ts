@@ -11,7 +11,7 @@ import * as path from 'path';
 
 process.env.NODE_ENV = 'test';
 
-const KAZE_CONFIG = './kazeConfig.json';
+const KAZE_CONFIG = './kumoriConfig.json';
 const RUNTMES_DIR = './runtimes';
 
 
@@ -26,7 +26,7 @@ describe('Runtime command tests', () => {
     try {
       let stats = fs.statSync(RUNTMES_DIR);
       if (stats.isDirectory()) {
-        rimraf.sync(RUNTMES_DIR);        
+        rimraf.sync(RUNTMES_DIR);
       } else {
         error = new Error(`${RUNTMES_DIR} is not a folder`);
       }
@@ -38,7 +38,7 @@ describe('Runtime command tests', () => {
       if (stats.isFile()) {
         rimraf.sync(KAZE_CONFIG);
       } else {
-        error = new Error(`${KAZE_CONFIG} is not a file`);        
+        error = new Error(`${KAZE_CONFIG} is not a file`);
       }
     } catch(err) {
       error = err;
@@ -49,7 +49,7 @@ describe('Runtime command tests', () => {
       done();
     }
   });
-    
+
   it('Create new runtime from extended template', (done) => {
     try {
       let config = {
@@ -71,7 +71,7 @@ describe('Runtime command tests', () => {
      done(error);
     }
   });
-    
+
   it('Create new runtime from basic template', (done) => {
     try {
       let config = {

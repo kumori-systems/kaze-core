@@ -54,11 +54,10 @@ export class Workspace {
         return Promise.reject(new Error('Stamp not specified and default stamp not found.'));
       }
       let toBeBundled: string [] = [];
-      let deployUuid : string;      
+      let deployUuid : string;
       let manifest = this.deployment.getManifest(name);
       if(inboundsDomain){
         manifest.name = uuid().replace("_", "-");
-        manifest.interconnection = true;
         this.deployment.updateManifest(name, manifest);
       }
       return this.deployment.getDistributableFile(name)
@@ -100,7 +99,7 @@ export class Workspace {
           })(name);
         }
         // Inbounds
-        if(inboundsDomain !== undefined){          
+        if(inboundsDomain !== undefined){
           let serviceBuildPath = `${this.service.getRootPath()}/${serviceConfig.domain}/${serviceConfig.name}/build`;
           child_process.execSync(`rm -rf ${serviceBuildPath}`);
           createPath(serviceBuildPath);
@@ -108,14 +107,14 @@ export class Workspace {
           let channels = this.service.getProvidedChannels(serviceConfig);
           for (let channel of channels) {
             inboundPromises.push(
-              this.service.generateGenericInbound(serviceConfig, channel, inboundsDomain, manifest.name)              
+              this.service.generateGenericInbound(serviceConfig, channel, inboundsDomain, manifest.name)
             )
           }
-          promises.push(            
+          promises.push(
             Promise.all(inboundPromises)
             .then(() => {
               toBeBundled.push(serviceBuildPath);
-              return Promise.resolve();              
+              return Promise.resolve();
             })
           );
         }
@@ -138,8 +137,8 @@ export class Workspace {
     return infoCommand(requestedInfo, stamp);
   }
 
-  public init(): Promise<boolean> {
-    return initCommand();
+  public init(configFileName: string): Promise<boolean> {
+    return initCommand(configFileName);
   }
 
   public register(paths: string[], stamp: string): Promise<any> {

@@ -1,2 +1,4 @@
+FROM {{=it.from}}
+
 # Put your code here
 # RUN ...

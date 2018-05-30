@@ -63,7 +63,7 @@ class Component {
             }
         })
             .then(() => {
-            return `${componentRootPath}/dist/build.zip`;
+            return `${componentRootPath}/dist/bundle.zip`;
         });
     }
     getParameters(config) {

@@ -1,6 +1,6 @@
 {
   "name": "workspace",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "SaaSDK Workspace management library",
   "main": "build/src/index.js",
   "scripts": {
@@ -50,7 +50,7 @@
     "ncp": "^2.0.0",
     "read": "^1.0.7",
     "request": "^2.81.0",
-    "runtime": "git+ssh://git@gitlab.iti.upv.es:saasdk/libs/runtime.git#radiatus",
+    "runtime": "git+ssh://git@gitlab.com:jbgisber/libs-runtime.git#master",
     "uuid": "^3.2.1"
   }
 }
