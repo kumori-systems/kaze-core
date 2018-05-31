@@ -7,7 +7,7 @@ export { IError } from './interface';
 import { Workspace } from './workspace';
 import { Stamp } from './stamp';
 export { StampConfig, configuration } from './utils';
-export { Deployment, DeploymentInstanceInfo, RegistrationResult } from 'admission-client';
+export { Deployment, DeploymentInstanceInfo, RegistrationResult } from '@kumori/admission-client';
 
 export const workspace = new Workspace(new Component(), new Deployment()
   , new LocalStamp(), new Runtime(), new Service(), new Stamp());
