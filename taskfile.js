@@ -14,12 +14,12 @@ exports.default = function * (task) {
 }
 
 exports.clean = function * (task) {
-  yield task.clear(['build', 'coverage']);
+  yield task.clear(['lib-test', 'coverage']);
 }
 
 exports.superclean = function * (task) {
   task.parallel(['clean']);
-  yield task.clear(['dist'])
+  yield task.clear(['lib'])
 }
 
 exports.mrproper = function * (task) {
@@ -33,7 +33,7 @@ exports.build = function * (task) {
 
   yield task.source('src/**/*.ts')
     .typescript(tsopts)
-    .target('build/src')
+    .target('lib')
 }
 
 exports.buildtest = function * (task) {
@@ -43,12 +43,12 @@ exports.buildtest = function * (task) {
   yield task.serial(['build'])
     .source("test/**/*.ts")
     .typescript(tsopts)
-    .target("build/test")
+    .target("lib-test")
 }
 
 exports.test = function * (task) {
   yield task.serial(['buildtest'])
-    .source("./build/test/**/*.test.js")
+    .source("./lib-test/**/*.test.js")
     .shell({
       cmd: 'mocha -u tdd --colors $glob',
       preferLocal: true,

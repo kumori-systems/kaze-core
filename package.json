@@ -2,8 +2,8 @@
   "name": "@kumori/workspace",
   "version": "1.0.0",
   "description": "Workspace management library",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "taskr build",
     "lint": "taskr lint",
