@@ -31,7 +31,7 @@ export declare function startupCheck(): any;
 export declare function getStampUrl(stamp: string): string;
 export declare function processDeploymentsInfo(dep: Deployment): {
     name: any;
-    entrypoints: never[];
+    entrypoints: any[];
 };
 export interface ECloudNameParts {
     protocol: string;

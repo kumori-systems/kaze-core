@@ -37,7 +37,7 @@ exports.mrproper = function * (task) {
 exports.build = function * (task) {
   yield task.source('./tsconfig.json')
     .shell({
-      cmd: 'tsc -p $glob --outDir lib --noEmit',
+      cmd: 'tsc -p $glob --outDir lib',
       preferLocal: true,
       glob: true
     })
