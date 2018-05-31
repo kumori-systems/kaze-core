@@ -1,8 +1,8 @@
-import { writeEmptyConfigFile } from '../src/utils';
+import { writeEmptyConfigFile } from '../lib/utils';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as assert from 'assert';
-import { workspace } from '../src/index';
+import { workspace } from '../lib/index';
 
 
 // REMOVE
@@ -50,41 +50,20 @@ describe('Runtime command tests', () => {
     }
   });
 
-  it('Create new runtime from extended template', (done) => {
-    try {
-      let config = {
-        name: 'extended',
-        domain: 'acme.com',
-        parent: 'eslap://eslap.cloud/runtime/native/1_1_1'
-      }
-      workspace.runtime.add('extended', config)
-      .then( () => {
-        let manifest = require(`${process.env.PWD}/runtimes/acme.com/extended/Manifest.json`);
-        assert.equal(manifest.name, `eslap://${config.domain}/runtime/${config.name}/0_0_1`);
-        assert.equal(manifest.derived.from, config.parent);
-        let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/acme.com/extended/Dockerfile`, {encoding:'utf8'});
-        assert.equal(dockerfile.startsWith('FROM eslap.cloud/runtime/native:1_1_1'),true);
-        done()
-      })
-      .catch( error => done(error));
-    } catch(error) {
-     done(error);
-    }
-  });
-
   it('Create new runtime from basic template', (done) => {
     try {
       let config = {
-        name: 'basic',
+        name: 'test',
         domain: 'acme.com',
+        parent: 'eslap://eslap.cloud/runtime/native/1_1_1'
       }
       workspace.runtime.add('basic', config)
       .then( () => {
-        let manifest = require(`${process.env.PWD}/runtimes/acme.com/basic/Manifest.json`);
+        let manifest = require(`${process.env.PWD}/runtimes/acme.com/test/Manifest.json`);
         assert.equal(manifest.name, `eslap://${config.domain}/runtime/${config.name}/0_0_1`);
-        assert.equal(manifest.derived, undefined);
-        let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/acme.com/basic/Dockerfile`, {encoding:'utf8'});
-        assert.equal(dockerfile.startsWith('FROM eslap.cloud/runtime/native:1_1_1'),false);
+        assert.equal(manifest.derived.from, config.parent);
+        let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/acme.com/test/Dockerfile`, {encoding:'utf8'});
+        assert.equal(dockerfile.startsWith('FROM eslap.cloud/runtime/native:1_1_1'),true);
         done()
       })
       .catch( error => done(error));

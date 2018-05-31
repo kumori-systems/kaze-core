@@ -1,8 +1,8 @@
-import { writeEmptyConfigFile } from '../src/utils';
+import { writeEmptyConfigFile } from '../lib/utils';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as assert from 'assert';
-import { workspace } from '../src/index';
+import { workspace } from '../lib/index';
 
 
 // REMOVE

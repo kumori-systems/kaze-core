@@ -12,7 +12,7 @@ import * as child_process from 'child_process';
 import * as archiver from 'archiver';
 import { Deployment } from '@kumori/admission-client';
 
-export const DEFAULT_CONFIG_FILE = 'kazeConfig.json'
+export const DEFAULT_CONFIG_FILE = 'kumoriConfig.json'
 export const configuration = {
   configFileName: DEFAULT_CONFIG_FILE
 }

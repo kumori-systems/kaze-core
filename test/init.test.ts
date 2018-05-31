@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as cp from 'child_process';
-import { workspace } from '../src/index';
+import { workspace } from '../lib/index';
 
 process.env.NODE_ENV = 'test';
 

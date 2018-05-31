@@ -4,19 +4,25 @@ import * as http from 'http';
 const stamp = express();
 let server;
 
+export const MOCK_STAMP = 'mockstamp'
+export const MOCK_STAMP_ADMISSION = 'http://localhost:3018'
+
 export function launch() {
   stamp.post('/admission/bundles', (req, res) => {
     res.send(
-      { 
-        success: true, 
-        message: '/admission/bundles received POST operation', 
-        data: { 
+      {
+        success: true,
+        message: '/admission/bundles received POST operation',
+        data: {
           successful: ['Testing'],
           errors: ['Testing'],
           deployments: {
             errors: ['Testing'],
             successful: [{
               deploymentURN: 'Testing',
+              topology: {
+                serviceURN: 'Testing',
+              },
               portMapping: [{
                 iid: "iid",
                 role: "role",
