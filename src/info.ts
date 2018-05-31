@@ -1,6 +1,6 @@
 import * as utils from './utils';
 import * as request from 'request';
-import { AdmissionClient, Deployment } from 'admission-client';
+import { AdmissionClient, Deployment } from '@kumori/admission-client';
 
 async function getDeployments(stamp: string): Promise<any> {
   let workspaceConfig = utils.readConfigFile();

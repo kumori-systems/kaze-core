@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as utils from './utils';
-import { AdmissionClient, FileStream, RegistrationResult } from 'admission-client';
+import { AdmissionClient, FileStream, RegistrationResult } from '@kumori/admission-client';
 import { createReadStream, access, constants } from 'fs';
 
 export class Stamp {

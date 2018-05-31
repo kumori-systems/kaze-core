@@ -10,7 +10,7 @@ import * as rimraf from 'rimraf';
 import * as vm from 'vm';
 import * as child_process from 'child_process';
 import * as archiver from 'archiver';
-import { Deployment } from 'admission-client';
+import { Deployment } from '@kumori/admission-client';
 
 export const DEFAULT_CONFIG_FILE = 'kazeConfig.json'
 export const configuration = {

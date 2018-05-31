@@ -42,7 +42,8 @@
     "tslint-config-standard": "^6.0.1"
   },
   "dependencies": {
-    "admission-client": "git+ssh://git@gitlab.com:ECloud/admission-client#master",
+    "@kumori/admission-client": "https://github.com/kumori-systems/admission-client.git#master",
+    "@kumori/runtime": "https://github.com/kumori-systems/runtime.git#master",
     "archiver": "^2.1.0",
     "chalk": "^2.3.0",
     "denodeify": "^1.2.1",
@@ -51,7 +52,6 @@
     "ncp": "^2.0.0",
     "read": "^1.0.7",
     "request": "^2.81.0",
-    "@kumori/runtime": "https://github.com/kumori-systems/runtime.git#master",
     "uuid": "^3.2.1"
   }
 }

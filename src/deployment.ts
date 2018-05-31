@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Role, Service, ServiceConfig } from './service';
 import { Component } from './component';
 import { access, constants } from 'fs';
-import { AdmissionClient, ScalingDeploymentModification } from 'admission-client';
+import { AdmissionClient, ScalingDeploymentModification } from '@kumori/admission-client';
 
 export interface DeploymentConfig {
   name: string,
