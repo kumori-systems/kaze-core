@@ -5,7 +5,7 @@ const path = require("path");
 const service_1 = require("./service");
 const component_1 = require("./component");
 const fs_1 = require("fs");
-const admission_client_1 = require("admission-client");
+const admission_client_1 = require("@kumori/admission-client");
 class Deployment {
     constructor(workspacePath, templatesPath) {
         this.workspacePath = (workspacePath ? workspacePath : '.');

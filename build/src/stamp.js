@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("./utils");
-const admission_client_1 = require("admission-client");
+const admission_client_1 = require("@kumori/admission-client");
 const fs_1 = require("fs");
 class Stamp {
     add(id, stampConfig, defaultStamp) {

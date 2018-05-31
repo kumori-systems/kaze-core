@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require("./utils");
-const admission_client_1 = require("admission-client");
+const admission_client_1 = require("@kumori/admission-client");
 function getDeployments(stamp) {
     return __awaiter(this, void 0, void 0, function* () {
         let workspaceConfig = utils.readConfigFile();
