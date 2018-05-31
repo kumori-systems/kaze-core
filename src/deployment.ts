@@ -19,7 +19,6 @@ export class Deployment {
   constructor(workspacePath?: string, templatesPath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/deployments`;
-    // this.templatesPath = (templatesPath ? templatesPath : path.join(__dirname,'../../template/deployment'));
     this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','deployment'));
   }
 

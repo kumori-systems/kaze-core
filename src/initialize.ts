@@ -24,7 +24,7 @@ export async function initCommand(templatesPath?:string): Promise<boolean> {
       }
 
       let destination = path.join(`${process.cwd()}`, 'templates');
-      let source = (templatesPath ? templatesPath : path.join(__dirname,'../../templates'));
+      let source = (templatesPath ? templatesPath : path.join(__dirname,'../templates'));
 
       let relative = path.relative(destination, source);
       if (relative && (relative.length > 0)) {

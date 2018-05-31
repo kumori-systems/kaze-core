@@ -17,7 +17,6 @@ export class Component {
   constructor(workspacePath?: string, templatesPath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/components`;
-    // this.templatesPath = (templatesPath ? templatesPath : path.join(__dirname,'../../template/component'));
     this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','component'));
   }
 
