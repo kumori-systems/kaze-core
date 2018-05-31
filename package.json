@@ -12,7 +12,7 @@
     "clean": "taskr clean",
     "superclean": "taskr superclean"
   },
-  "author": "ITI",
+  "author": "Kumori Systems <info@kumori.systems>",
   "license": "MIT",
   "devDependencies": {
     "@taskr/clear": "^1.1.0",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@kumori/admission-client": "https://github.com/kumori-systems/admission-client.git#master",
-    "@kumori/runtime": "https://github.com/kumori-systems/runtime.git#master",
+    "@kumori/runtime": "1.0.0",
     "archiver": "^2.1.0",
     "chalk": "^2.3.0",
     "denodeify": "^1.2.1",
