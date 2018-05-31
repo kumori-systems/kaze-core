@@ -4,7 +4,7 @@ import * as utils from './utils';
 import { ncp } from 'ncp';
 
 export async function initCommand(templatesPath?:string): Promise<boolean> {
-  console.log('Initializing workspace following standard SaaSDK project hierarchy...');
+  console.log('Initializing workspace following standard Kumori project hierarchy...');
   return new Promise<boolean>( (resolve, reject) => {
     try {
       const stdDirs: string[] = [
