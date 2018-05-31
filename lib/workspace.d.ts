@@ -17,7 +17,7 @@ export declare class Workspace {
     deploy(paths: string[], stamp: string): Promise<any>;
     deployWithDependencies(name: string, stamp?: string, inboundsDomain?: string): Promise<any>;
     info(requestedInfo: string, stamp: string): Promise<any>;
-    init(configFileName: string): Promise<boolean>;
+    init(configFileName?: string): Promise<boolean>;
     register(paths: string[], stamp: string): Promise<any>;
     undeploy(uris: string[], stamp: string): Promise<any>;
     readConfigFile(): any;

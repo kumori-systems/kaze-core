@@ -137,7 +137,7 @@ export class Workspace {
     return infoCommand(requestedInfo, stamp);
   }
 
-  public init(configFileName: string): Promise<boolean> {
+  public init(configFileName?: string): Promise<boolean> {
     return initCommand(configFileName);
   }
 
