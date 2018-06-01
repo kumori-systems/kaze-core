@@ -1,6 +1,7 @@
 import { Component, ComponentConfig } from './component';
 import { Deployment, DeploymentConfig } from './deployment';
 import { Service, ServiceConfig } from './service';
+import { Resource } from './resource'
 import { bundleCommand } from './bundle';
 import { deployCommand } from './deploy';
 import { infoCommand } from './info';
@@ -25,14 +26,16 @@ export class Workspace {
   public runtime: Runtime;
   public service: Service;
   public stamp: Stamp;
+  public resource: Resource;
 
-  constructor (component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, stamp: Stamp) {
+  constructor (component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, resource: Resource, stamp: Stamp) {
     this.component = component;
     this.deployment = deployment;
     this.localStamp = localStamp;
     this.runtime = runtime;
     this.service = service;
     this.stamp = stamp;
+    this.resource = resource;
   }
 
   public bundle(paths: string[]): Promise<any> {

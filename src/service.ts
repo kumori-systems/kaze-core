@@ -1,4 +1,4 @@
-import { processParameters, Parameter, ParameterType, Resource, processResources, createElementFromTemplate, createPath, startupCheck, getJSON } from './utils';
+import { processParameters, Parameter, ParameterType, ResourceData, processResources, createElementFromTemplate, createPath, startupCheck, getJSON } from './utils';
 import * as path from 'path';
 import { Component } from './component';
 import { access, constants} from 'fs';
@@ -93,9 +93,9 @@ export class Service {
     return parameters;
   }
 
-  public getResources(config: ServiceConfig): Resource[] {
+  public getResources(config: ServiceConfig): ResourceData[] {
     let manifest = this.getManifest(config)
-    let resources:Resource[] = [];
+    let resources:ResourceData[] = [];
     if (manifest.configuration && manifest.configuration.resources && (manifest.configuration.resources.length > 0)) {
       resources = processResources(manifest.configuration.resources);
     }

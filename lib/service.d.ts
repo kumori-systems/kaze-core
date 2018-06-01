@@ -1,4 +1,4 @@
-import { Parameter, Resource } from './utils';
+import { Parameter, ResourceData } from './utils';
 export interface ServiceConfig {
     domain: string;
     name: string;
@@ -24,7 +24,7 @@ export declare class Service {
     getProvidedChannels(config: ServiceConfig): Channel[];
     getRequiredChannels(config: ServiceConfig): Channel[];
     getParameters(config: ServiceConfig): Parameter[];
-    getResources(config: ServiceConfig): Resource[];
+    getResources(config: ServiceConfig): ResourceData[];
     getManifest(config: ServiceConfig): any;
     parseName(urn: string): ServiceConfig;
     getComponents(config: ServiceConfig): string[];

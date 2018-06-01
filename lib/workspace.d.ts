@@ -1,6 +1,7 @@
 import { Component } from './component';
 import { Deployment } from './deployment';
 import { Service } from './service';
+import { Resource } from './resource';
 import { LocalStamp } from './localstamp';
 import { Runtime } from './runtime';
 import { Stamp } from './stamp';
@@ -12,7 +13,8 @@ export declare class Workspace {
     runtime: Runtime;
     service: Service;
     stamp: Stamp;
-    constructor(component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, stamp: Stamp);
+    resource: Resource;
+    constructor(component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, resource: Resource, stamp: Stamp);
     bundle(paths: string[]): Promise<any>;
     deploy(paths: string[], stamp: string): Promise<any>;
     deployWithDependencies(name: string, stamp?: string, inboundsDomain?: string): Promise<any>;

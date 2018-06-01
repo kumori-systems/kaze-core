@@ -6,4 +6,5 @@ export { ComponentConfig } from './component';
 export { ServiceConfig } from './service';
 export { DeploymentConfig } from './deployment';
 export { RuntimeConfig } from './runtime';
+export { ResourceConfig } from './resource';
 export declare const workspace: Workspace;

@@ -68,11 +68,11 @@ export declare enum ResourceType {
     VOLUME_PERSITENT = 5,
     VOLUME_VOLATILE = 6
 }
-export interface Resource {
+export interface ResourceData {
     name: string;
     type: ResourceType;
 }
-export declare function processResources(rawResources: any[]): Resource[];
+export declare function processResources(rawResources: any[]): ResourceData[];
 export declare function processParameters(rawParams: any[]): Parameter[];
 export declare function executeProgram(command: string, args: string[], options: child_process.SpawnOptions): Promise<void>;
 export declare function createBundleFile(targetFile: string, sourceFiles: string[]): Promise<string>;

@@ -1,4 +1,4 @@
-import { Parameter, ParameterType, Resource, ResourceType, StampConfig, readConfigFile, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON } from './utils';
+import { Parameter, ParameterType, ResourceData, ResourceType, StampConfig, readConfigFile, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON } from './utils';
 import * as path from 'path';
 import { Role, Service, ServiceConfig } from './service';
 import { Component } from './component';
@@ -275,7 +275,7 @@ export class Deployment {
     }
   }
 
-  private *processResourcesDefaultValues(resources: Resource[]) {
+  private *processResourcesDefaultValues(resources: ResourceData[]) {
     for (let res of resources) {
       switch (res.type) {
         case ResourceType.CERT_CLIENT:

@@ -439,13 +439,13 @@ export enum ResourceType {
   VOLUME_VOLATILE
 }
 
-export interface Resource {
+export interface ResourceData {
   name: string,
   type: ResourceType
 }
 
-export function processResources(rawResources: any[]): Resource[] {
-  let resources:Resource[] = [];
+export function processResources(rawResources: any[]): ResourceData[] {
+  let resources:ResourceData[] = [];
   for (let res of rawResources) {
     let type:ResourceType;
     switch (res.type) {
@@ -471,7 +471,7 @@ export function processResources(rawResources: any[]): Resource[] {
         type = ResourceType.VOLUME_VOLATILE;
         break;
     }
-    let resource:Resource = {
+    let resource:ResourceData = {
       name: res.name,
       type: type
     }

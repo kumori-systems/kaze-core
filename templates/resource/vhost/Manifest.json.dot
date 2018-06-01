@@ -1,7 +1,7 @@
 {
     "spec": "eslap://eslap.cloud/resource/vhost/1_0_0",
-    "name": "eslap://radiatus.iti.es/resources/vhost/{{=it.inboundUuid}}",
+    "name": "eslap://{{=it.domain}}/resources/vhost/{{=it.name}}",
     "parameters": {
-        "vhost": "{{=it.inboundUuid}}.argo.kumori.cloud"
+        "vhost": "{{=it.name}}.{{=it.domain}}"
     }
 }
