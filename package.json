@@ -47,6 +47,8 @@
   "dependencies": {
     "@kumori/admission-client": "1.0.0",
     "@kumori/runtime": "1.0.0",
+    "@types/form-data": "^2.2.1",
+    "@types/socket.io-client": "^1.4.32",
     "archiver": "2.1.0",
     "chalk": "2.3.0",
     "denodeify": "1.2.1",

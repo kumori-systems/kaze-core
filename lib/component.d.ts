@@ -18,4 +18,5 @@ export declare class Component {
     getDistributableFile(config: ComponentConfig): Promise<string>;
     checkVersion(config: ComponentConfig): Promise<boolean>;
     getCurrentVersion(config: ComponentConfig): Promise<string>;
+    generateUrn(name: string, domain: string, version: string): string;
 }

@@ -32,4 +32,5 @@ export declare class Service {
     checkVersion(config: ServiceConfig): Promise<boolean>;
     getCurrentVersion(config: ServiceConfig): Promise<string>;
     generateGenericInbound(config: ServiceConfig, channel: Channel, inboundsDomain: string, deployUuid: string): Promise<void>;
+    generateUrn(name: string, domain: string, version: string): string;
 }

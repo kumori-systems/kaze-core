@@ -9,4 +9,5 @@ export declare class Stamp {
     get(stamp: string): utils.StampConfig;
     isDefault(name: string): boolean;
     register(stamp: string, bundle: string): Promise<RegistrationResult>;
+    unregister(stamp: string, urn: string): Promise<boolean>;
 }

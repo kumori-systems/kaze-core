@@ -165,4 +165,35 @@ export class Stamp {
 
     }
 
+    public async unregister(stamp: string, urn: string): Promise<boolean> {
+      try {
+        if (!stamp) {
+          throw new Error('Stamp name parameter is missing');
+        }
+        if (!urn) {
+          throw new Error('The element URN is missing');
+        }
+        let workspaceConfig = utils.readConfigFile();
+        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+        if (!stampConfig) {
+          throw new Error(`Stamp ${stamp} not registered in the workspace`);
+        }
+
+        let admissionUrl = stampConfig.admission
+        let token = stampConfig.token
+        let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+        let manifest = await admission.getStorageManifest(urn)
+        await admission.removeStorage(urn)
+        return true
+      } catch(error) {
+        let message = ((error && error.message) ? error.message : error.toString());
+        if (message.indexOf(" Error code 23 - Rsync command") != -1) {
+          message = `Element ${urn} is not registered in stamp ${stamp}`
+        } else {
+          message = `Element ${urn} unregistration process failed in stamp ${stamp}`
+        }
+        throw new Error(message);
+      }
+    }
+
   }

@@ -5,5 +5,5 @@ export declare class LocalStamp {
     restart(): void;
     ssh(): void;
     status(): void;
-    private _runInSaasdk(action, params?);
+    private _runInSaasdk;
 }

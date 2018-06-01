@@ -61,6 +61,10 @@ export class Runtime {
     runtime.bundle(runtimeFolder, manifestPath, targetFile);
   }
 
+  public generateUrn(name: string, domain: string, version: string) {
+    return `eslap://${domain}/runtime/${name}/${version}`
+  }
+
 }
 
 export function addCommand(template: string, config: RuntimeConfig): Promise<string> {

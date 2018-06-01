@@ -14,11 +14,11 @@ export declare class Deployment {
     getService(name: string): ServiceConfig;
     getDistributableFile(name: string): Promise<string>;
     scaleRole(name: string, role: string, numInstances: number, stamp: string): Promise<string>;
-    undeploy(name: string, stamp: string): any;
-    private createDeploymentResources(config);
-    private createDeploymentParameters(config);
-    private getComponentParameters(urn);
-    private processParametersDefaultValues(parameters);
-    private processResourcesDefaultValues(resources);
-    private getRole(name, roles);
+    undeploy(name: string, stamp: string): Promise<import("../node_modules/@kumori/admission-client/lib/deployment-instance-info").DeploymentInstanceInfo[]>;
+    private createDeploymentResources;
+    private createDeploymentParameters;
+    private getComponentParameters;
+    private processParametersDefaultValues;
+    private processResourcesDefaultValues;
+    private getRole;
 }

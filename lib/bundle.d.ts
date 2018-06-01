@@ -1,1 +1,1 @@
-export declare function bundleCommand(paths: string[]): Promise<any>;
+export declare function bundleCommand(paths: string[]): Promise<string>;

@@ -30,7 +30,7 @@ export declare function readConfigFile(): any;
 export declare function startupCheck(): any;
 export declare function getStampUrl(stamp: string): string;
 export declare function processDeploymentsInfo(dep: Deployment): {
-    name: any;
+    name: string;
     entrypoints: any[];
 };
 export interface ECloudNameParts {
@@ -53,7 +53,7 @@ export declare enum ParameterType {
     LIST = 4,
     NUMBER = 5,
     STRING = 6,
-    VHOST = 7,
+    VHOST = 7
 }
 export interface Parameter {
     name: string;
@@ -66,7 +66,7 @@ export declare enum ResourceType {
     FAULT_GROUP = 3,
     VHOST = 4,
     VOLUME_PERSITENT = 5,
-    VOLUME_VOLATILE = 6,
+    VOLUME_VOLATILE = 6
 }
 export interface Resource {
     name: string;

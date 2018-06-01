@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as child from 'child_process';
 import * as utils from './utils';
 
-export async function bundleCommand(paths: string[]): Promise<any> {
+export async function bundleCommand(paths: string[]): Promise<string> {
   try {
     let builtsDirectory = path.join('.', 'builts');
     if (!fs.existsSync(builtsDirectory)) {
@@ -24,7 +24,7 @@ export async function bundleCommand(paths: string[]): Promise<any> {
     if (validPaths.length == 0) {
       console.log('No valid paths found.');
     } else {
-      let zipName = await utils.question({ prompt: 'Output zip =', default: Date.now().toString() });
+      let zipName = Date.now().toString();
       let zipPath = path.join(builtsDirectory, zipName);
       let cmd = `zip -r ${zipPath} `.concat(validPaths.join(" "));
       console.log(`Bundling ${validPaths} into ${zipPath}.zip.`)

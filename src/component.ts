@@ -195,4 +195,8 @@ export class Component {
     })
   }
 
+  public generateUrn(name: string, domain: string, version: string) {
+    return `eslap://${domain}/components/${name}/${version}`
+  }
+
 }
