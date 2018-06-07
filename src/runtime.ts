@@ -65,6 +65,10 @@ export class Runtime {
     return `eslap://${domain}/runtime/${name}/${version}`
   }
 
+  public install(urn: string) {
+    return runtime.install(urn)
+  }
+
 }
 
 export function addCommand(template: string, config: RuntimeConfig): Promise<string> {

@@ -13,6 +13,7 @@ export declare class Runtime {
     add(template: string, config: RuntimeConfig): Promise<string>;
     build(config: RuntimeConfig): void;
     generateUrn(name: string, domain: string, version: string): string;
+    install(urn: string): any;
 }
 export declare function addCommand(template: string, config: RuntimeConfig): Promise<string>;
 export declare function buildCommand(config: RuntimeConfig): void;
