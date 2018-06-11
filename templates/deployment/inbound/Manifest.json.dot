@@ -2,11 +2,10 @@
     "spec": "http://eslap.cloud/manifest/deployment/1_0_0",
     "servicename": "eslap://eslap.cloud/services/http/inbound/1_0_0",
     "name": "{{=it.inboundUuid}}",
-    "interconnection": true,
     "configuration": {
         "resources": {
             "server_cert": null,
-            "vhost": "eslap://{{=it.domain}}/resources/vhost/{{=it.inboundUuid}}" 
+            "vhost": "eslap://{{=it.domain}}/resources/vhost/{{=it.inboundUuid}}"
         },
         "parameters": {
             "TLS": false,

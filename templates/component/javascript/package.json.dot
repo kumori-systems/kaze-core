@@ -12,8 +12,8 @@
     "superclean": "taskr superclean",
     "devinit": "npm install taskr @taskr/clear @taskr/shell @taskr/jest && taskr devinstall"
   },
-  "author": "Kumori",
-  "license": "ISC",
+  "author": "Kumori Systems (info@kumori.systems)",
+  "license": "MIT",
   "devDependencies": {
     "@taskr/clear": "^1.1.0",
     "@taskr/jest": "^1.1.1",

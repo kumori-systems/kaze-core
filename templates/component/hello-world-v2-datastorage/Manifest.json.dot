@@ -4,21 +4,21 @@
   "code": "{{=it.name}}-code-blob",
   "runtime": "eslap://eslap.cloud/runtime/native/2_0_0",
   "channels": {
-    "requires": [],
+    "requires": [ ],
     "provides": [
       {
-        "name": "endpoint",
+        "name": "dataapi",
         "type": "eslap://eslap.cloud/channel/reply/1_0_0",
-        "protocol": "eslap://eslap.cloud/protocol/message/http/1_0_0"
+        "protocol": "TBD"
       }
     ]
   },
-
-
   "configuration": {
     "resources": [ ],
-    "parameters": [ ]
-
+    "parameters": [{
+      "name": "logzioToken",
+      "type": "eslap://eslap.cloud/parameter/string/1_0_0"
+    }]
   },
   "profile": {
     "threadability": "*"

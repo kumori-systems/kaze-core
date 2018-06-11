@@ -1,7 +1,6 @@
 {
   "spec": "http://eslap.cloud/manifest/deployment/1_0_0",
   "servicename": "eslap://{{=it.service.domain}}/services/{{=it.service.name}}/{{=it.service.version}}",
-  "name": "{{=it.name}}",
   "nickname": "{{=it.name}}",
   "configuration": {
     "resources": {
@@ -45,7 +44,7 @@
         out += '        "__memory": 1,\n';
         out += '        "__ioperf": 1,\n';
         out += '        "__iopsintensive": false,\n';
-        out += '        "__bandwidth": 1,\n';
+        out += '        "__bandwidth": 10,\n';
         out += '        "__resilience": 1\n';
         out += '      }\n';
         if (i == (it.roles.length - 1)) {

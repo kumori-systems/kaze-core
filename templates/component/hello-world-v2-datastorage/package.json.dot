@@ -24,11 +24,12 @@
   },
   "dependencies": {
     "component": "git+ssh://git@gitlab.com:ECloud/component.git#BACO",
-    "express": "^4.16.2",
-    "http-message": "git+ssh://git@gitlab.com:ECloud/http-message.git#BACO"
+    "q": "^1.5.1",
+    "winston": "^2.4.2",
+    "winston-logzio": "^1.0.7"
   },
   "engines": {
-    "node": ">=4.2.1"
+    "node": ">=8.9.0"
   },
   "os": [
     "linux",

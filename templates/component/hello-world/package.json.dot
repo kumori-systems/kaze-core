@@ -5,13 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "dist": "taskr dist",
-    "devbuild": "taskr build",
     "lint": "taskr lint",
     "prespec": "npm run lint",
     "spec": "taskr spec ",
     "clean": "taskr clean",
     "superclean": "taskr superclean",
-    "devinit": "npm install taskr @taskr/clear @taskr/shell @taskr/typescript @taskr/jest && taskr devinstall"
+    "devinit": "npm install taskr @taskr/clear @taskr/shell @taskr/jest && taskr devinstall"
   },
   "author": "Kumori Systems (info@kumori.systems)",
   "license": "MIT",
@@ -19,24 +18,20 @@
     "@taskr/clear": "^1.1.0",
     "@taskr/jest": "^1.1.1",
     "@taskr/shell": "^1.1.0",
-    "@taskr/typescript": "^1.1.0",
-    "@types/jest": "^19.2.3",
-    "@types/node": "^7.0.18",
     "jest": "^20.0.3",
-    "taskr": "^1.1.0",
-    "ts-jest": "^20.0.4",
-    "tslint": "^5.2.0",
-    "tslint-config-standard": "^5.0.2",
-    "typescript": "^2.3.2"
+    "lint": "^1.1.2",
+    "taskr": "^1.1.0"
   },
   "dependencies": {
+    "component": "git+ssh://git@gitlab.com:ECloud/component.git#BACO",
     "express": "^4.16.2",
-    "http-message": "gitlab:ECloud/http-message.git#ticket884",
-    "slaputils": "gitlab:ECloud/slap-utils.git#ticket884",
-    "@kumori/component": "git+ssh://git@gitlab.com:kumori/tools/component.git#master"
+    "q": "^1.5.1",
+    "winston": "^2.4.2",
+    "winston-logzio": "^1.0.7",
+    "http-message": "git+ssh://git@gitlab.com:ECloud/http-message.git#BACO"
   },
   "engines": {
-    "node": ">=4.2.1"
+    "node": ">=8.9.0"
   },
   "os": [
     "linux",

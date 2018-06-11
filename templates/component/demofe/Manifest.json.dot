@@ -2,7 +2,7 @@
   "spec": "http://eslap.cloud/manifest/component/1_0_0",
   "name": "eslap://{{=it.domain}}/components/{{=it.name}}/0_0_1",
   "code": "{{=it.name}}-code-blob",
-  "runtime": "eslap://eslap.cloud/runtime/native/1_1_1",
+  "runtime": "eslap://eslap.cloud/runtime/native/2_0_0",
   "channels": {
     "requires": [
       {

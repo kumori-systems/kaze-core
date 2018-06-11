@@ -1,0 +1,54 @@
+{
+  "spec": "http://eslap.cloud/manifest/service/1_0_0",
+  "name": "eslap://{{=it.domain}}/services/{{=it.name}}/0_0_1",
+  "configuration": {
+    "resources": [],
+    "parameters": [{
+      "name": "{{=it.name}}-fe",
+      "type": "eslap://eslap.cloud/parameter/json/1_0_0"
+    },
+    {
+      "name": "{{=it.name}}-datastorage",
+      "type": "eslap://eslap.cloud/parameter/json/1_0_0"
+    }]
+  },
+  "roles": [{
+    "name": "{{=it.name}}-fe",
+    "component": "eslap://{{=it.domain}}/components/{{=it.name}}_fe/0_0_1"
+  },
+  {
+    "name": "{{=it.name}}-datastorage",
+    "component": "eslap://{{=it.domain}}/components/{{=it.name}}_datastorage/0_0_1"
+  }],
+  "channels": {
+    "provides": [{
+      "name": "service",
+      "type": "eslap://eslap.cloud/channel/reply/1_0_0",
+      "protocol": "eslap://eslap.cloud/protocol/message/http/1_0_0"
+    }],
+    "requires": []
+  },
+  "connectors": [
+    {
+      "type": "eslap://eslap.cloud/connector/loadbalancer/1_0_0",
+      "depended": [{
+        "endpoint": "service"
+      }],
+      "provided": [{
+        "role": "{{=it.name}}-fe",
+        "endpoint": "entrypoint"
+      }]
+    },
+    {
+      "type": "eslap://eslap.cloud/connector/loadbalancer/1_0_0",
+      "depended": [{
+        "role": "{{=it.name}}-fe",
+        "endpoint": "dataclient"
+      }],
+      "provided": [{
+        "role": "{{=it.name}}-datastorage",
+        "endpoint": "dataapi"
+      }]
+    }
+  ]
+}

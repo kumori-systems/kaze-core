@@ -7,18 +7,18 @@
     "requires": [],
     "provides": [
       {
-        "name": "endpoint",
+        "name": "entrypoint",
         "type": "eslap://eslap.cloud/channel/reply/1_0_0",
         "protocol": "eslap://eslap.cloud/protocol/message/http/1_0_0"
       }
     ]
   },
-
-
   "configuration": {
     "resources": [ ],
-    "parameters": [ ]
-
+    "parameters": [{
+      "name": "logzioToken",
+      "type": "eslap://eslap.cloud/parameter/string/1_0_0"
+    }]
   },
   "profile": {
     "threadability": "*"
