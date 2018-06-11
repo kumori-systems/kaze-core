@@ -11,7 +11,7 @@
     "spec": "taskr spec ",
     "clean": "taskr clean",
     "superclean": "taskr superclean",
-    "devinit": "npm install taskr @taskr/clear @taskr/shell @taskr/typescript @taskr/jest && taskr devinstall"
+    "devinit": "rm -f package-lock.json && npm install taskr @taskr/clear @taskr/shell @taskr/typescript @taskr/jest && taskr devinstall"
   },
   "author": "Kumori Systems (info@kumori.systems)",
   "license": "MIT",
