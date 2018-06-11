@@ -45,54 +45,56 @@ class Fe extends Component {
   constructor(runtime, role, iid, incnum, localData, resources,
                 parameters, dependencies, offerings ) {
 
-      // Component class (parent) constructor invocation.
-      super(...arguments);
+    // Component class (parent) constructor invocation.
+    super(...arguments);
 
-      this.runtime = runtime;
-      this.role = role;
-      this.iid = iid;
-      this.incnum = incnum;
-      this.localData = localData;
-      this.resources = resources;
-      this.parameters = parameters;
-      this.dependencies = dependencies;
-      this.offerings = offerings;
+    this.runtime = runtime;
+    this.role = role;
+    this.iid = iid;
+    this.incnum = incnum;
+    this.localData = localData;
+    this.resources = resources;
+    this.parameters = parameters;
+    this.dependencies = dependencies;
+    this.offerings = offerings;
 
-      // In this example, the one and only instance configuration parameter is
-      // used to configure the log system (in this example we use Winston with
-      // Logz.io transport, but you could use your own, or use no logger at all)
-      this.logger = winston;
-      if (this.parameters['logzioToken'] == null){
-        throw new Error('logzioToken parameter not found');
-      }
-      const loggerOptions = {
-        token: this.parameters['logzioToken'],
-        host: 'listener.logz.io'
-      };
-      const logzioWinstonTransport = new winstonLogzio(loggerOptions);
+    // In this example, the one and only instance configuration parameter is
+    // used to configure the log system (in this example we use Winston with
+    // Logz.io transport, but you could use your own, or use no logger at all)
+    this.logger = winston;
+    const loggerOptions = {
+      token: this.parameters['logzioToken'],
+      host: 'listener.logz.io'
+    };
+    try {
+      var logzioWinstonTransport = new winstonLogzio(loggerOptions);
       this.logger.configure({ transports: [logzioWinstonTransport]});
+    }
+    catch(error) {
+      // An error is thrown when logzioToken parameter is not found.
+    }
 
-      // Kumori Node.js runtime handles uncaught exceptions by default, but you
-      // can provide your own handler.
-      process.removeAllListeners('uncaughtException');
-      process.on('uncaughtException', (err => {
-        this.logger.error("UncaughtException: %s", err.stack);
-        logzioWinstonTransport.flush(() => process.exit(1));
-      }).bind(this));
+    // Kumori Node.js runtime handles uncaught exceptions by default, but you
+    // can provide your own handler.
+    process.removeAllListeners('uncaughtException');
+    process.on('uncaughtException', (err => {
+      this.logger.error("UncaughtException: %s", err.stack);
+      logzioWinstonTransport.flush(() => process.exit(1));
+    }).bind(this));
 
-      this.logger.info(`Fe.constructor role=${this.role} iid=${this.iid}`);
+    this.logger.info(`Fe.constructor role=${this.role} iid=${this.iid}`);
 
-      // This component uses a Reply channel, through which the HTTP request
-      // arrive.
-      const entrypointChannel = this.offerings['entrypoint'];
-      if (entrypointChannel == null){
-        throw new Error('Entrypoint channel not found');
-      }
+    // This component uses a Reply channel, through which the HTTP request
+    // arrive.
+    const entrypointChannel = this.offerings['entrypoint'];
+    if (entrypointChannel == null){
+      throw new Error('Entrypoint channel not found');
+    }
 
-      // RestApi is the object that will in truth attend HTTP request.
-      // It internally uses Express module (see restapi.js for details).
-      // It is given the channel through which the HTTP request arrive.
-      this.restapi = new RestApi(entrypointChannel, this.logger);
+    // RestApi is the object that will in truth attend HTTP request.
+    // It internally uses Express module (see restapi.js for details).
+    // It is given the channel through which the HTTP request arrive.
+    this.restapi = new RestApi(entrypointChannel, this.logger);
   }
 
 

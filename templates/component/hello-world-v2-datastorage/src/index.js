@@ -61,15 +61,17 @@ class DataStorage extends Component {
     // used to configure the log system (in this example we use Winston with
     // Logz.io transport, but you could use your own, or use no logger at all).
     this.logger = winston;
-    if (this.parameters['logzioToken'] == null){
-      throw new Error('logzioToken parameter not found');
-    }
     const loggerOptions = {
       token: this.parameters['logzioToken'],
       host: 'listener.logz.io'
     };
-    const logzioWinstonTransport = new winstonLogzio(loggerOptions);
-    this.logger.configure({ transports: [logzioWinstonTransport]});
+    try {
+      var logzioWinstonTransport = new winstonLogzio(loggerOptions);
+      this.logger.configure({ transports: [logzioWinstonTransport]});
+    }
+    catch(error) {
+      // An error is thrown when logzioToken parameter is not found.
+    }
 
     // Kumori Node.js runtime handles uncaught exceptions by default, but you
     // can provide your own handler.
