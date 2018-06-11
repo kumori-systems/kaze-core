@@ -31,6 +31,5 @@ export declare class Service {
     getDistributableFile(config: ServiceConfig): Promise<string>;
     checkVersion(config: ServiceConfig): Promise<boolean>;
     getCurrentVersion(config: ServiceConfig): Promise<string>;
-    generateGenericInbound(config: ServiceConfig, channel: Channel, inboundsDomain: string, deployUuid: string): Promise<void>;
     generateUrn(name: string, domain: string, version: string): string;
 }

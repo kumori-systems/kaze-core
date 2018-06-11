@@ -15,6 +15,7 @@ import { readConfigFile, checkStamp, StampStatus, getStampUrl, startupCheck, get
 import * as path from 'path';
 import * as child_process from 'child_process';
 import { v4 as uuid } from 'uuid';
+import * as tshirt from './tshirt-patch';
 
 let localStamp = new LocalStamp();
 
@@ -49,7 +50,7 @@ export class Workspace {
   // Registers a deployment manifest in a target stamp. If any of the
   // deployment manifest dependencies are not registered in the target stamp
   // and are available in the workspace, they are bundled to and registered.
-  public deployWithDependencies(name: string, stamp?: string, inboundsDomain?: string): Promise<any> {
+  public deployWithDependencies(name: string, stamp: string, addRandomInbounds?: boolean): Promise<any> {
     try {
       let config = readConfigFile();
       stamp = ( stamp ? stamp : config['working-stamp'] );
@@ -57,17 +58,17 @@ export class Workspace {
         return Promise.reject(new Error('Stamp not specified and default stamp not found.'));
       }
       let toBeBundled: string [] = [];
+      let blobs:{pathInZip: string, data: Buffer}[] = []
       let deployUuid : string;
       let manifest = this.deployment.getManifest(name);
-      if(inboundsDomain){
+      if (addRandomInbounds) {
         manifest.name = uuid().replace("_", "-");
-        this.deployment.updateManifest(name, manifest);
       }
-      return this.deployment.getDistributableFile(name)
-      .then((filepath) => {
-        toBeBundled.push(filepath);
-        return this.stamp.isRegistered(stamp, manifest.servicename)
+      blobs.push({
+        pathInZip: `deployments/${name}/Manifest.json`,
+        data: new Buffer(JSON.stringify(manifest, null, 2))
       })
+      return this.stamp.isRegistered(stamp, manifest.servicename)
       .then((registered):Promise<ServiceConfig> => {
         let serviceConfig = this.deployment.getService(name);
         if (!registered) {
@@ -101,31 +102,35 @@ export class Workspace {
             }));
           })(name);
         }
-        // Inbounds
-        if(inboundsDomain !== undefined){
-          let serviceBuildPath = `${this.service.getRootPath()}/${serviceConfig.domain}/${serviceConfig.name}/build`;
-          child_process.execSync(`rm -rf ${serviceBuildPath}`);
-          createPath(serviceBuildPath);
-          let inboundPromises:Promise<any>[] = [];
-          let channels = this.service.getProvidedChannels(serviceConfig);
-          for (let channel of channels) {
-            inboundPromises.push(
-              this.service.generateGenericInbound(serviceConfig, channel, inboundsDomain, manifest.name)
-            )
-          }
-          promises.push(
-            Promise.all(inboundPromises)
-            .then(() => {
-              toBeBundled.push(serviceBuildPath);
-              return Promise.resolve();
-            })
-          );
-        }
         return Promise.all(promises);
       })
       .then(() => {
+        if (addRandomInbounds) {
+          let serviceConfig = this.deployment.getService(name)
+          let serviceManifest = this.service.getManifest(serviceConfig)
+          if (serviceManifest.channels && serviceManifest.channels.provides && serviceManifest.channels.provides.length > 0) {
+            let serviceName = serviceManifest.name
+            for (let i in serviceManifest.channels.provides) {
+              let inboundName = `inbound-deployment-${i}`
+              let channel = serviceManifest.channels.provides[i]
+              let inboundManifest = tshirt.createInboundManifest(inboundName)
+              let linkManifest = tshirt.createLinkManifest(manifest.name, channel.name, inboundName, "frontend")
+              let tshirtPath = `tshirt/${channel.name}`
+              let inboundBlob = {
+                pathInZip: `${tshirtPath}/inbound/Manifest.json`,
+                data: new Buffer(JSON.stringify(inboundManifest, null, 2))
+              }
+              let linkBlob = {
+                pathInZip: `${tshirtPath}/link/Manifest.json`,
+                data: new Buffer(JSON.stringify(linkManifest, null, 2))
+              }
+              blobs.push(inboundBlob)
+              blobs.push(linkBlob)
+            }
+          }
+        }
         let targetFile = path.join('.', 'builts', `${name}_${Date.now().toString()}.zip`);
-        return createBundleFile(targetFile, toBeBundled);
+        return createBundleFile(targetFile, toBeBundled, blobs);
       })
       .then((zipfileath) => {
         return this.stamp.register(stamp, zipfileath);

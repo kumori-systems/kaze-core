@@ -205,36 +205,6 @@ export class Service {
     })
   }
 
-  public generateGenericInbound(config: ServiceConfig, channel:Channel, inboundsDomain: string, deployUuid: string): Promise<void> {
-    let serviceBuildPath = `${this.rootPath}/${config.domain}/${config.name}/build`;
-    let templatesPath = path.join(`${process.cwd()}`,'templates');
-    let vhostPath = path.join('./', serviceBuildPath, `vhosts/${channel.name}`);
-    let vhostTemplatePath = path.join(templatesPath, `resource/vhost`);
-    let inboundPath = path.join('./', serviceBuildPath, `inbounds/${channel.name}`);
-    let inboundTemplatePath = path.join(templatesPath, `deployment/inbound`);
-    let linkPath = path.join('./', serviceBuildPath, `links/${channel.name}`);
-    let linkTemplatePath = path.join(templatesPath, `link/basic`);
-
-    [vhostPath, inboundPath, linkPath].forEach((p) => {
-      createPath(p);
-    });
-
-    let params = {
-      "domain": config.domain,
-      "name": channel.name,
-      "deployUuid": deployUuid,
-      "inboundUuid": uuid().replace("_", "-")
-    };
-
-    return createElementFromTemplate(vhostTemplatePath, vhostPath, params)
-    .then(() => {
-      return createElementFromTemplate(inboundTemplatePath, inboundPath, params)
-    })
-    .then(() => {
-      return createElementFromTemplate(linkTemplatePath, linkPath, params)
-    })
-  }
-
   public generateUrn(name: string, domain: string, version: string) {
     return `eslap://${domain}/services/${name}/${version}`
   }

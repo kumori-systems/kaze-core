@@ -532,7 +532,7 @@ export function executeProgram(command: string, args:string[], options:child_pro
 }
 
 // Creates the bundle file containing the manifest and the Docker runtime image
-export function createBundleFile(targetFile: string, sourceFiles: string[]): Promise<string> {
+export function createBundleFile(targetFile: string, sourceFiles?: string[], blobs?: {pathInZip: string, data: Buffer}[]): Promise<string> {
 
     return new Promise((resolve, reject) => {
 
@@ -572,15 +572,24 @@ export function createBundleFile(targetFile: string, sourceFiles: string[]): Pro
         archive.pipe(output);
 
         // Appends the files included in the bundle
-        for (let i in sourceFiles) {
-          let folder = `folder${i}`;
-          let filepath = sourceFiles[i];
-          let stats = fs.statSync(filepath);
-          if (stats.isFile()) {
-            let basename = path.basename(filepath);
-            archive.append(fs.createReadStream(filepath), { name: `${folder}/${basename}` });
-          } else if (stats.isDirectory()){
-            archive.directory(filepath, `${folder}`);
+        if (sourceFiles) {
+          for (let i in sourceFiles) {
+            let folder = `folder${i}`;
+            let filepath = sourceFiles[i];
+            let stats = fs.statSync(filepath);
+            if (stats.isFile()) {
+              let basename = path.basename(filepath);
+              archive.append(fs.createReadStream(filepath), { name: `${folder}/${basename}` });
+            } else if (stats.isDirectory()){
+              archive.directory(filepath, `${folder}`);
+            }
+          }
+        }
+
+        // Appends the blobs included in the bundle
+        if (blobs) {
+          for (let blob of blobs) {
+            archive.append(blob.data, { name: blob.pathInZip });
           }
         }
 

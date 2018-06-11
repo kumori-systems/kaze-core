@@ -199,7 +199,6 @@ export class Deployment {
             }
             compElem = compParamsIt.next();
           }
-          console.log("COMP PARAMS", compParams, value);
           value = `${value}\n      }`;
           param.value = value;
         }

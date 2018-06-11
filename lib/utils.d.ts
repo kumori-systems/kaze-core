@@ -75,4 +75,7 @@ export interface ResourceData {
 export declare function processResources(rawResources: any[]): ResourceData[];
 export declare function processParameters(rawParams: any[]): Parameter[];
 export declare function executeProgram(command: string, args: string[], options: child_process.SpawnOptions): Promise<void>;
-export declare function createBundleFile(targetFile: string, sourceFiles: string[]): Promise<string>;
+export declare function createBundleFile(targetFile: string, sourceFiles?: string[], blobs?: {
+    pathInZip: string;
+    data: Buffer;
+}[]): Promise<string>;
