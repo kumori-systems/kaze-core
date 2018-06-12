@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.4
+
+Templates updated to avoid the problems related with package-lock.json when `kumori component build` is executed twice.
+
 ## v1.0.3
 
 Now `kumori component deploy` creates inbounds with random domains by default for each provided service channels. This behaviour can be disabled with the `--skip-inbounds` flag.
