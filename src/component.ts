@@ -48,22 +48,10 @@ export class Component {
     let componentRootPath = `${this.rootPath}/${config.domain}/${config.name}`;
     return this.install(config, componentRootPath)
     .then(() => {
-      if (fs.existsSync(componentRootPath + "/taskfile.js")) {
-        return executeProgram('./node_modules/.bin/taskr', ['installer'], {cwd: componentRootPath})
-      }else if(fs.existsSync(componentRootPath + "/flyfile.js")){
-        return executeProgram('./node_modules/.bin/fly', ['installer'], {cwd: componentRootPath})
-      }else{
-        throw "Missing file: taskfile.js || flyfile.js"
-      }
+      return executeProgram('npm', ['run', 'dist'], {cwd: componentRootPath})
     })
     .then(() => {
-      if (fs.existsSync(componentRootPath + "/taskfile.js")) {
-        return executeProgram('./node_modules/.bin/taskr', ['dist'], {cwd: componentRootPath})
-      }else if(fs.existsSync(componentRootPath + "/flyfile.js")){
-        return executeProgram('./node_modules/.bin/fly', ['dist'], {cwd: componentRootPath})
-      }else{
-        throw "Missing file: taskfile.js || flyfile.js"
-      }
+      return executeProgram('npm', ['run', 'superclean'], {cwd: componentRootPath})
     })
     .then(() => {
       return `${componentRootPath}/dist/bundle.zip`;

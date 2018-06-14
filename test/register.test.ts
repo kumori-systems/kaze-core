@@ -6,7 +6,7 @@ import * as utils from '../lib/utils';
 import * as path from 'path';
 import { workspace } from '../lib/index';
 
-describe('Register command tests', () => {
+describe.only('Register command tests', () => {
   before(() => {
     mockStamp.launch();
     fs.writeFileSync('test.zip', '');
@@ -25,12 +25,20 @@ describe('Register command tests', () => {
     cp.execSync(`rm ${utils.configuration.configFileName}`)
   });
 
-  beforeEach(() => {
+  beforeEach((done) => {
     // utils.configuration.configFileName = MOCK_CONFIG_FILE
     let builtsDirectory = path.join('.', 'builts');
     if (!fs.existsSync(builtsDirectory)) {
       console.warn('"builts" directory does not exist, initializing...')
-      utils.mkdir(builtsDirectory);
+      utils.mkdir(builtsDirectory)
+      .then(() => {
+        done()
+      })
+      .catch((error) => {
+        done(error)
+      })
+    } else {
+      done()
     }
   });
 
@@ -41,7 +49,7 @@ describe('Register command tests', () => {
   it('Register command works with bundle zip', done => {
    workspace.register(['test.zip'], mockStamp.MOCK_STAMP)
       .then(result => {
-        console.log("RESULT", JSON.stringify(result));
+        // console.log("RESULT", JSON.stringify(result));
         assert.equal(result.successful.length, 1);
         assert.equal(result.errors.length, 2);
         assert.equal(result.deployments.length, 1);
@@ -56,6 +64,7 @@ describe('Register command tests', () => {
     workspace.register(['builts'], mockStamp.MOCK_STAMP)
       .then(result => {
         // assert.equal(fs.existsSync('builts/test.zip'), true);
+        // console.log("RESULT", JSON.stringify(result));
         assert.equal(result.successful.length, 1);
         assert.equal(result.errors.length, 2);
         assert.equal(result.deployments.length, 1);
@@ -69,6 +78,7 @@ describe('Register command tests', () => {
   it('While executing register command with multiple arguments, it should skip those not applicable', done => {
     workspace.register(['builts', 'notApplicable.rar', 'Manifest.json', 'test.zip'], mockStamp.MOCK_STAMP)
       .then(result => {
+        // console.log("RESULT", JSON.stringify(result));
         assert.equal(result.successful.length, 2, "Number of registered elements invalid");
         assert.equal(result.errors.length, 4, "Number of failed elements invalid");
         assert.equal(result.deployments.length, 2, "Number of deployments invalid");

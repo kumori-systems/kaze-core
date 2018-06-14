@@ -45,17 +45,35 @@ const tasks = {
   }
 
   , clean: function* (task) {
-    yield task.clear(['build', 'coverage']);
-  }
+    yield task.source('./package.json')
+      .target('./build')
+      .source("./Manifest.json")
+      .run({ every: true }, dockerImage)
+      .shell(`docker run --rm -t --entrypoint=bash -v $PWD:/tmp/component "$file" -c "cd /tmp/component && rm -rf build coverage"`)
+      .source('static/**/*')
+      .target('build/static')
+}
 
   , superclean: function* (task) {
     task.parallel(['clean']);
-    yield task.clear(['dist'])
+    yield task.source('./package.json')
+      .target('./build')
+      .source("./Manifest.json")
+      .run({ every: true }, dockerImage)
+      .shell(`docker run --rm -t --entrypoint=bash -v $PWD:/tmp/component "$file" -c "cd /tmp/component && rm -rf node_modules"`)
+      .source('static/**/*')
+      .target('build/static')
   }
 
   , mrproper: function* (task) {
     task.parallel(['superclean']);
-    yield task.clear(['node_modules'])
+    yield task.source('./package.json')
+      .target('./build')
+      .source("./Manifest.json")
+      .run({ every: true }, dockerImage)
+      .shell(`docker run --rm -t --entrypoint=bash -v $PWD:/tmp/component "$file" -c "cd /tmp/component && rm -rf dist"`)
+      .source('static/**/*')
+      .target('build/static')
   }
 
   , build: function* (task) {
@@ -79,7 +97,7 @@ const tasks = {
 
     let name = getJSON('package.json').name;
 
-    yield task.serial(['build'])
+    yield task.serial(['installer', 'build'])
       .source(['build/src/**/*.js'])
       .target(`dist/components/${name}/code/contents`)
       .source('build/node_modules')
@@ -141,7 +159,6 @@ var isObject =
 
 function plugin(task, _, utils) {
   // Load common plugins
-  loadPlugin(task, require('@task/clear'))
   loadPlugin(task, require('@task/jest'))
   loadPlugin(task, require('@task/shell'))
   loadPlugin(task, require('@task/typescript'))

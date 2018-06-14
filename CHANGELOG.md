@@ -3,6 +3,8 @@
 ## v1.0.5
 
 Bug fix. Now the template is checked before creating the new element folder in the workspace.
+Templates has been changed to remove temporary and dependency folders after building the final distributable zip.
+Now this library depends only on npm targets 'devinit', 'superclean' y 'dist'.
 
 ## v1.0.4
 
@@ -19,7 +21,7 @@ Addedd runtime.install to install runtime images
 
 ## v1.0.1
 
-Identical to 1.0.0. Patch version increased due to NPM repository problems. 
+Identical to 1.0.0. Patch version increased due to NPM repository problems.
 
 ## v1.0.0
 
