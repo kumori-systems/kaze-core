@@ -43,14 +43,10 @@ export class Service {
       try {
         startupCheck();
         let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        if (!createPath(dstdir)) {
-          reject(`Service ${config.name} not added because already exists in the workspace`);
-        } else {
-          let srcdir = path.join(this.templatesPath, template);
-          createElementFromTemplate(srcdir, dstdir, config)
-          .then(() => {resolve(`Service "${config.name}" added in ${dstdir}`)})
-          .catch((error) => {reject(error)});
-        }
+        let srcdir = path.join(this.templatesPath, template);
+        createElementFromTemplate(srcdir, dstdir, config)
+        .then(() => {resolve(`Service "${config.name}" added in ${dstdir}`)})
+        .catch((error) => {reject(error)});
       } catch(error) {
         reject(error);
       }

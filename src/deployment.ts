@@ -38,25 +38,21 @@ export class Deployment {
           service: config.service
         };
         let dstdir = `${this.rootPath}/${config.name}`;
-        if (!createPath(dstdir)) {
-          reject(`Deployment ${config.name} not added because already exists in the workspace`);
-        } else {
-          // Adds the roles configurarion to the parameters needed by the
-          // templates engine
-          let srcdir = path.join(this.templatesPath, template);
-          let service = new Service(this.workspacePath, this.templatesPath);
-          let serviceRoles = service.getRoles(config.service);
-          templateConfig.roles = serviceRoles;
-          // Calculates which parameters should be added to the templates
-          // engine configuration.
-          templateConfig.parameters = this.createDeploymentParameters(config.service);
-          // Calculates which resources should be added
-          templateConfig.resources = this.createDeploymentResources(config.service);
-          // Generate the deployment manifest from the template
-          return createElementFromTemplate(srcdir, dstdir, templateConfig)
-          .then(() => {resolve(`Deployment "${config.name}" added in ${dstdir}`)})
-          .catch((error) => {reject(error)});
-        }
+        // Adds the roles configurarion to the parameters needed by the
+        // templates engine
+        let srcdir = path.join(this.templatesPath, template);
+        let service = new Service(this.workspacePath, this.templatesPath);
+        let serviceRoles = service.getRoles(config.service);
+        templateConfig.roles = serviceRoles;
+        // Calculates which parameters should be added to the templates
+        // engine configuration.
+        templateConfig.parameters = this.createDeploymentParameters(config.service);
+        // Calculates which resources should be added
+        templateConfig.resources = this.createDeploymentResources(config.service);
+        // Generate the deployment manifest from the template
+        return createElementFromTemplate(srcdir, dstdir, templateConfig)
+        .then(() => {resolve(`Deployment "${config.name}" added in ${dstdir}`)})
+        .catch((error) => {reject(error)});
       } catch(error) {
         reject(error);
       }

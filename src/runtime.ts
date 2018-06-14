@@ -30,24 +30,20 @@ export class Runtime {
         startupCheck();
         // let parts = parseEcloudURN(config.name);
         let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        if (!createPath(dstdir)) {
-          reject(`Runtime ${config.name} not added because already exists in the workspace`);
-        } else {
-          let srcdir = path.join(this.templatesPath, template);
-          let dockerConfig = {
-            from: ''
-          };
-          for (let elem in config) {
-            dockerConfig[elem] = config[elem];
-          }
-          if (config.parent) {
-            let parts = parseEcloudURN(config.parent);
-            dockerConfig.from = `${parts.domain}/runtime/${parts.path}:${parts.version}`
-          }
-          createElementFromTemplate(srcdir, dstdir, dockerConfig)
-          .then(() => {resolve(`Runtime ${config.name} added in ${dstdir}`)})
-          .catch((error) => { reject(error) });
+        let srcdir = path.join(this.templatesPath, template);
+        let dockerConfig = {
+          from: ''
+        };
+        for (let elem in config) {
+          dockerConfig[elem] = config[elem];
         }
+        if (config.parent) {
+          let parts = parseEcloudURN(config.parent);
+          dockerConfig.from = `${parts.domain}/runtime/${parts.path}:${parts.version}`
+        }
+        createElementFromTemplate(srcdir, dstdir, dockerConfig)
+        .then(() => {resolve(`Runtime ${config.name} added in ${dstdir}`)})
+        .catch((error) => { reject(error) });
       } catch(error) {
         reject(error);
       }

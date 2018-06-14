@@ -320,40 +320,53 @@ export function createElementFromTemplate(source: string, destination: string, c
 
   return new Promise((resolve, reject) => {
     try {
-      dot.templateSettings.strip = false;
-
-      let templates = new Array();
-
-      let options = {
-        filter: (filename) => {
-          let ext = filename.substring(filename.length-4);
-          if (ext == '.dot') {
-            templates.push(filename);
-            return false;
-          } else {
-            return true;
-          }
-        }
+      let stats = fs.statSync(source)
+      if (!stats.isDirectory()) {
+        reject(new Error(`Template ${source} not found`))
+        return;
       }
+      if (!createPath(destination)) {
+        reject(`Element not added because already exists in the workspace`);
+      } else {
+        dot.templateSettings.strip = false;
 
-      ncp(source, destination, options, function (error) {
-        if (error) {
-          if (error[0] && (error[0].code == 'ENOENT')) {
-            reject('Template not found');
-          } else {
-            reject(error);
+        let templates = new Array();
+
+        let options = {
+          filter: (filename) => {
+            let ext = filename.substring(filename.length-4);
+            if (ext == '.dot') {
+              templates.push(filename);
+              return false;
+            } else {
+              return true;
+            }
           }
         }
-        let promises: Promise<string>[] = [];
-        for (let file of templates) {
-          promises.push(applyTemplate(file, source, destination, config));
-        }
-        Promise.all(promises)
-        .then(() => {resolve();})
-        .catch((error) => {reject(error)});
-      });
+
+        ncp(source, destination, options, function (error) {
+          if (error) {
+            if (error[0] && (error[0].code == 'ENOENT')) {
+              reject('Template not found');
+            } else {
+              reject(error);
+            }
+          }
+          let promises: Promise<string>[] = [];
+          for (let file of templates) {
+            promises.push(applyTemplate(file, source, destination, config));
+          }
+          Promise.all(promises)
+          .then(() => {resolve();})
+          .catch((error) => {reject(error)});
+        });
+      }
     } catch(error) {
-      reject(error);
+      if (error.code && (error.code.localeCompare('ENOENT') == 0)) {
+        reject(new Error(`Template ${source} not found`))
+      } else {
+        reject(error);
+      }
     }
   })
 }

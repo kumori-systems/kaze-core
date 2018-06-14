@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.5
+
+Bug fix. Now the template is checked before creating the new element folder in the workspace.
+
 ## v1.0.4
 
 Templates updated to avoid the problems related with package-lock.json when `kumori component build` is executed twice.

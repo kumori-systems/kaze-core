@@ -163,7 +163,7 @@ describe('Deployment command tests', () => {
       .then( () => {
         let manifest = getJSON(`${DEPLOYMENTS_DIR}/${config.name}/Manifest.json`);
         assert.equal(manifest.servicename, `eslap://${config.service.domain}/services/${config.service.name}/0_0_1`);
-        assert.equal(manifest.name, config.name);
+        assert.equal(manifest.nickname, config.name);
         let roleResources = {
           "__instances": 1,
           "__maxinstances": 3,
@@ -171,7 +171,7 @@ describe('Deployment command tests', () => {
           "__memory": 1,
           "__ioperf": 1,
           "__iopsintensive": false,
-          "__bandwidth": 1,
+          "__bandwidth": 10,
           "__resilience": 1
         }
         assert.deepEqual(manifest.roles.role1.resources, roleResources);
