@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@kumori/admission-client": "^1.0.0",
-    "@kumori/runtime": "^1.0.1",
+    "@kumori/runtime": "^1.1.1",
     "@types/form-data": "^2.2.1",
     "@types/socket.io-client": "^1.4.32",
     "archiver": "2.1.0",
