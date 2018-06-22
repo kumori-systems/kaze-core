@@ -5,14 +5,15 @@ import { workspace } from '../lib/index';
 
 process.env.NODE_ENV = 'test';
 
-describe('Init command tests', () => {
+describe('Init command tests', function () {
   after(() => {
-    cp.execSync('rmdir builts components dependencies deployments resources runtimes services tests');
+    cp.execSync('rm -rf builts components dependencies deployments resources runtimes services tests');
     cp.execSync('rm -rf kumoriConfig.json');
   })
 
-  it('Init command creates properly all directories', done => {
-    workspace.init()
+  it('Init command creates properly all directories', function (done) {
+    this.timeout(5000)
+    workspace.init('kumori-workspace')
       .then(success => {
         assert.equal(success, true);
         assert.equal(fs.existsSync('builts'), true);
@@ -30,8 +31,9 @@ describe('Init command tests', () => {
       })
   });
 
-  it('Init command should work with partial initialized workspaces', done => {
-    workspace.init()
+  it('Init command should work with partial initialized workspaces', function (done) {
+    this.timeout(5000)
+    workspace.init('kumori-workspace')
       .then(success => {
         assert.equal(success, true);
         done();

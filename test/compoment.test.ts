@@ -4,25 +4,18 @@ import * as rimraf from 'rimraf';
 import * as assert from 'assert';
 import { workspace } from '../lib/index';
 
-
-// REMOVE
-import * as cp from 'child_process';
-import * as path from 'path';
-
 process.env.NODE_ENV = 'test';
 
 const KAZE_CONFIG = './kumoriConfig.json';
 const COMPONENTS_DIR = './components';
-const TEMPLATES_DIR = './templates';
 
-
-describe('Components command tests', () => {
+describe('Components command tests', function () {
 
   before(() => {
     writeEmptyConfigFile();
   });
 
-  after((done) => {
+  after(function (done) {
     let error:Error = undefined;
     let folders = [ COMPONENTS_DIR ];
 
@@ -56,20 +49,21 @@ describe('Components command tests', () => {
     }
   });
 
-  it('Create new component', (done) => {
+  it('Create new component', function (done) {
+    this.timeout(5000)
     try {
       let config = {
         name: 'test',
         domain: 'acme.com'
       }
-      workspace.component.add('typescript', config)
+      workspace.component.add('kumori-component-javascript', config)
       .then( () => {
         let data = fs.readFileSync(`${process.env.PWD}/components/${config.domain}/${config.name}/Manifest.json`,'utf8');
         assert.equal(data.includes(`eslap://${config.domain}/components/${config.name}/0_0_1`), true);
         assert.equal(data.includes(`${config.name}-code-blob`), true);
         done()
       })
-      .catch( error => done(error));
+      .catch( (error) => done(error));
     } catch(error) {
      done(error);
     }

@@ -5,11 +5,6 @@ import * as assert from 'assert';
 import { workspace } from '../lib/index';
 import * as mkdirp from 'mkdirp';
 
-
-// REMOVE
-import * as cp from 'child_process';
-import * as path from 'path';
-
 process.env.NODE_ENV = 'test';
 
 const KAZE_CONFIG = `${process.env.PWD}/kumoriConfig.json`;
@@ -107,7 +102,7 @@ function createMockComponent() {
   fs.writeFileSync(`${COMPONENTS_DIR}/acme.com/test/Manifest.json`, data);
 }
 
-describe('Deployment command tests', () => {
+describe('Deployment command tests', function () {
 
   before(() => {
     writeEmptyConfigFile();
@@ -115,7 +110,7 @@ describe('Deployment command tests', () => {
     createMockComponent();
   });
 
-  after((done) => {
+  after(function (done) {
     let error:Error = undefined;
     let folders = [DEPLOYMENTS_DIR, SERVICES_DIR, COMPONENTS_DIR];
 
@@ -149,7 +144,8 @@ describe('Deployment command tests', () => {
     }
   });
 
-  it('Create new deployment', (done) => {
+  it('Create new deployment', function (done) {
+    this.timeout(5000)
     try {
       let config = {
         name: 'test',
@@ -159,7 +155,7 @@ describe('Deployment command tests', () => {
           version: '0_0_1'
         }
       }
-      workspace.deployment.add('basic', config)
+      workspace.deployment.add('kumori-deployment-basic', config)
       .then( () => {
         let manifest = getJSON(`${DEPLOYMENTS_DIR}/${config.name}/Manifest.json`);
         assert.equal(manifest.servicename, `eslap://${config.service.domain}/services/${config.service.name}/0_0_1`);
@@ -189,14 +185,14 @@ describe('Deployment command tests', () => {
           }
         }
         assert.deepEqual(manifest.configuration.parameters, parameters);
-        let resources = {
-          "aclientcert": "",
-          "aservercert": "",
-          "afaultgrout": "",
-          "avhost": "",
-          "apersistentvolume": "",
-          "volatilevolume": ""
-        }
+        // let resources = {
+        //   "aclientcert": "",
+        //   "aservercert": "",
+        //   "afaultgrout": "",
+        //   "avhost": "",
+        //   "apersistentvolume": "",
+        //   "volatilevolume": ""
+        // }
         done()
       })
       .catch( error => done(error));

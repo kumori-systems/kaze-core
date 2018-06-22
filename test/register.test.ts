@@ -6,7 +6,7 @@ import * as utils from '../lib/utils';
 import * as path from 'path';
 import { workspace } from '../lib/index';
 
-describe.only('Register command tests', () => {
+describe('Register command tests', () => {
   before(() => {
     mockStamp.launch();
     fs.writeFileSync('test.zip', '');

@@ -1,7 +1,0 @@
-{
-    "spec": "eslap://eslap.cloud/resource/vhost/1_0_0",
-    "name": "eslap://{{=it.domain}}/resources/vhost/{{=it.name}}",
-    "parameters": {
-        "vhost": "{{=it.name}}.{{=it.domain}}"
-    }
-}

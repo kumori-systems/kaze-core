@@ -39,14 +39,15 @@ export function runTemplate(name: string, targetPath: string, params:{[name: str
                 }
             }
 
-            env.lookup(function () {
-                env.run(function (err) {
+            env.lookup( () => {
+                let result = env.run( (err) => {
                     if (err) {
                         reject(err)
                     } else {
                         resolve()
                     }
-                });
+                })
+                result.on('error', (error) => console.log(error))
             });
 
         } catch(error) {
