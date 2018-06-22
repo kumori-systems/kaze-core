@@ -5,9 +5,8 @@ export interface DeploymentConfig {
 }
 export declare class Deployment {
     private rootPath;
-    private templatesPath;
     private workspacePath;
-    constructor(workspacePath?: string, templatesPath?: string);
+    constructor(workspacePath?: string);
     add(template: string, config: DeploymentConfig): Promise<string>;
     getManifest(name: string): any;
     updateManifest(name: string, manifest: any): any;

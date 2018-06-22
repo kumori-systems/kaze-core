@@ -1,8 +1,8 @@
-import * as dot from 'dot';
-import * as fs from 'fs';
-import { parseEcloudURN, createPath, startupCheck, ECloudNameParts, createElementFromTemplate, deleteFolder } from './utils';
+import { parseEcloudURN, createPath, startupCheck, createElementFromTemplate } from './utils';
 import * as runtime from '@kumori/runtime';
 import * as path from 'path';
+// import { runTemplate } from './templates';
+import { runTemplate } from './template-managers/yo';
 
 export interface RuntimeConfig {
   name: string,
@@ -15,39 +15,29 @@ export interface RuntimeConfig {
 export class Runtime {
 
   private rootPath: string;
-  private templatesPath: string;
   private workspacePath: string;
 
-  constructor(workspacePath?: string, templatesPath?: string) {
+  constructor(workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/runtimes`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','runtime'));
   }
 
-  public add(template: string, config: RuntimeConfig): Promise<string> {
-    return new Promise( (resolve, reject) => {
-      try {
-        startupCheck();
-        // let parts = parseEcloudURN(config.name);
-        let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        let srcdir = path.join(this.templatesPath, template);
-        let dockerConfig = {
-          from: ''
-        };
-        for (let elem in config) {
-          dockerConfig[elem] = config[elem];
-        }
-        if (config.parent) {
-          let parts = parseEcloudURN(config.parent);
-          dockerConfig.from = `${parts.domain}/runtime/${parts.path}:${parts.version}`
-        }
-        createElementFromTemplate(srcdir, dstdir, dockerConfig)
-        .then(() => {resolve(`Runtime ${config.name} added in ${dstdir}`)})
-        .catch((error) => { reject(error) });
-      } catch(error) {
-        reject(error);
-      }
-    });
+  public async add(template: string, config: RuntimeConfig): Promise<string> {
+    startupCheck();
+    // let parts = parseEcloudURN(config.name);
+    let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
+    let dockerConfig = {
+      from: ''
+    };
+    for (let elem in config) {
+      dockerConfig[elem] = config[elem];
+    }
+    if (config.parent) {
+      let parts = parseEcloudURN(config.parent);
+      dockerConfig.from = `${parts.domain}/runtime/${parts.path}:${parts.version}`
+    }
+    await runTemplate(template, dstdir, dockerConfig)
+    return `Runtime ${config.name} added in ${dstdir}`
   }
 
   public build(config: RuntimeConfig) {

@@ -15,9 +15,8 @@ export interface Channel {
 }
 export declare class Service {
     private rootPath;
-    private templatesPath;
     private workspacePath;
-    constructor(workspacePath?: string, templatesPath?: string);
+    constructor(workspacePath?: string);
     getRootPath(): string;
     add(template: string, config: ServiceConfig): Promise<string>;
     getRoles(config: ServiceConfig): Role[];

@@ -1,9 +1,10 @@
-import { Parameter, ParameterType, ResourceData, ResourceType, StampConfig, readConfigFile, createElementFromTemplate, createPath, startupCheck, getJSON, writeJSON } from './utils';
-import * as path from 'path';
+import { Parameter, ParameterType, ResourceData, ResourceType, StampConfig, readConfigFile, startupCheck, getJSON, writeJSON } from './utils';
 import { Role, Service, ServiceConfig } from './service';
 import { Component } from './component';
 import { access, constants } from 'fs';
 import { AdmissionClient, ScalingDeploymentModification } from '@kumori/admission-client';
+// import { runTemplate } from './templates';
+import { runTemplate } from './template-managers/yo';
 
 export interface DeploymentConfig {
   name: string,
@@ -13,50 +14,39 @@ export interface DeploymentConfig {
 export class Deployment {
 
   private rootPath: string;
-  private templatesPath: string;
   private workspacePath: string;
 
-  constructor(workspacePath?: string, templatesPath?: string) {
+  constructor(workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/deployments`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','deployment'));
   }
 
-  public add(template: string, config: DeploymentConfig): Promise<string> {
-    return new Promise( (resolve, reject) => {
-      try {
-        startupCheck();
-        if (!config.service.version) {
-          reject('Service version missing');
-          return;
-        }
-        let templateConfig = {
-          name: config.name,
-          parameters: null,
-          resources: null,
-          roles: null,
-          service: config.service
-        };
-        let dstdir = `${this.rootPath}/${config.name}`;
-        // Adds the roles configurarion to the parameters needed by the
-        // templates engine
-        let srcdir = path.join(this.templatesPath, template);
-        let service = new Service(this.workspacePath, this.templatesPath);
-        let serviceRoles = service.getRoles(config.service);
-        templateConfig.roles = serviceRoles;
-        // Calculates which parameters should be added to the templates
-        // engine configuration.
-        templateConfig.parameters = this.createDeploymentParameters(config.service);
-        // Calculates which resources should be added
-        templateConfig.resources = this.createDeploymentResources(config.service);
-        // Generate the deployment manifest from the template
-        return createElementFromTemplate(srcdir, dstdir, templateConfig)
-        .then(() => {resolve(`Deployment "${config.name}" added in ${dstdir}`)})
-        .catch((error) => {reject(error)});
-      } catch(error) {
-        reject(error);
-      }
-    });
+  public async add(template: string, config: DeploymentConfig): Promise<string> {
+    startupCheck();
+    if (!config.service.version) {
+      throw new Error('Service version missing');
+    }
+    let templateConfig = {
+      name: config.name,
+      parameters: null,
+      resources: null,
+      roles: null,
+      service: config.service
+    };
+    let dstdir = `${this.rootPath}/${config.name}`;
+    // Adds the roles configurarion to the parameters needed by the
+    // templates engine
+    let service = new Service(this.workspacePath);
+    let serviceRoles = service.getRoles(config.service);
+    templateConfig.roles = serviceRoles;
+    // Calculates which parameters should be added to the templates
+    // engine configuration.
+    templateConfig.parameters = this.createDeploymentParameters(config.service);
+    // Calculates which resources should be added
+    templateConfig.resources = this.createDeploymentResources(config.service);
+    // Generate the deployment manifest from the template
+    await runTemplate(template, dstdir, templateConfig)
+    return `Deployment "${config.name}" added in ${dstdir}`
   }
 
   public getManifest(name: string): any {
@@ -72,7 +62,7 @@ export class Deployment {
   public getService(name: string): ServiceConfig {
     let manifest = this.getManifest(name);
     let urn = manifest.servicename;
-    let service = new Service(this.workspacePath, this.templatesPath);
+    let service = new Service(this.workspacePath);
     return service.parseName(urn);
   }
 
@@ -142,7 +132,7 @@ export class Deployment {
 
   // Calculates de deployment resources from the service resources.
   private createDeploymentResources(config: ServiceConfig): any[] {
-    let service = new Service(this.workspacePath, this.templatesPath);
+    let service = new Service(this.workspacePath);
     // Calculates which resources should be added to the templates
     // engine configuration.
     let resources = service.getResources(config);
@@ -160,7 +150,7 @@ export class Deployment {
 
   // Calculates de deployment parameters from the service and roles parameters.
   private createDeploymentParameters(config: ServiceConfig): any[] {
-    let service = new Service(this.workspacePath, this.templatesPath);
+    let service = new Service(this.workspacePath);
     let roles = service.getRoles(config);
     // Calculates which parameters should be added to the templates
     // engine configuration.
@@ -207,7 +197,7 @@ export class Deployment {
 
   // Given a component URN, returns its parameters.
   private getComponentParameters(urn: string): Parameter[] {
-    let component = new Component(this.workspacePath, this.templatesPath);
+    let component = new Component(this.workspacePath);
     let config = component.parseName(urn);
     return component.getParameters(config);
   }

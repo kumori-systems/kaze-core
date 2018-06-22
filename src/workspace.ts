@@ -1,5 +1,5 @@
-import { Component, ComponentConfig } from './component';
-import { Deployment, DeploymentConfig } from './deployment';
+import { Component } from './component';
+import { Deployment } from './deployment';
 import { Service, ServiceConfig } from './service';
 import { Resource } from './resource'
 import { bundleCommand } from './bundle';
@@ -7,17 +7,15 @@ import { deployCommand } from './deploy';
 import { infoCommand } from './info';
 import { initCommand } from './initialize';
 import { LocalStamp} from './localstamp';
+import { Project } from './project';
 import { registerCommand } from './register';
 import { Runtime } from './runtime';
 import { Stamp } from './stamp'
 import { undeployCommand } from './undeploy';
-import { readConfigFile, checkStamp, StampStatus, getStampUrl, startupCheck, getStampStatus, createBundleFile, createPath } from './utils';
+import { readConfigFile, checkStamp, StampStatus, getStampUrl, startupCheck, getStampStatus, createBundleFile } from './utils';
 import * as path from 'path';
-import * as child_process from 'child_process';
 import { v4 as uuid } from 'uuid';
 import * as tshirt from './tshirt-patch';
-
-let localStamp = new LocalStamp();
 
 export class Workspace {
 
@@ -28,11 +26,13 @@ export class Workspace {
   public service: Service;
   public stamp: Stamp;
   public resource: Resource;
+  public project: Project;
 
-  constructor (component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, resource: Resource, stamp: Stamp) {
+  constructor (component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, resource: Resource, project: Project, stamp: Stamp) {
     this.component = component;
     this.deployment = deployment;
     this.localStamp = localStamp;
+    this.project = project;
     this.runtime = runtime;
     this.service = service;
     this.stamp = stamp;
@@ -145,8 +145,8 @@ export class Workspace {
     return infoCommand(requestedInfo, stamp);
   }
 
-  public init(configFileName?: string): Promise<boolean> {
-    return initCommand(configFileName);
+  public init(template: string, configFileName?: string): Promise<boolean> {
+    return initCommand(template, configFileName);
   }
 
   public register(paths: string[], stamp: string): Promise<any> {

@@ -1,6 +1,7 @@
-import { Parameter, processParameters, getJSON, createPath, startupCheck, createElementFromTemplate, executeProgram } from './utils';
+import { Parameter, processParameters, getJSON, startupCheck, executeProgram } from './utils';
 import * as fs from 'fs';
-import * as path from 'path';
+// import { runTemplate } from './templates';
+import { runTemplate } from './template-managers/yo';
 
 export interface ComponentConfig {
   domain: string;
@@ -11,28 +12,18 @@ export interface ComponentConfig {
 export class Component {
 
   private rootPath: string;
-  private templatesPath: string;
   private workspacePath: string;
 
-  constructor(workspacePath?: string, templatesPath?: string) {
+  constructor(workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/components`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','component'));
   }
 
-  public add(template: string, config: ComponentConfig): Promise<string> {
-    return new Promise( (resolve, reject) => {
-      try {
-        startupCheck();
-        let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        let srcdir = path.join(this.templatesPath, template);
-        createElementFromTemplate(srcdir, dstdir, config)
-        .then(() => {resolve(dstdir)})
-        .catch((error) => {reject(error)});
-      } catch(error) {
-        reject(error);
-      }
-    });
+  public async add(template: string, config: ComponentConfig): Promise<string> {
+    startupCheck();
+    let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
+    await runTemplate(template, dstdir, config)
+    return dstdir
   }
 
   public install(config: ComponentConfig, rootPath?: string): Promise<string> {

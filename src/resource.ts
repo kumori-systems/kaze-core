@@ -1,9 +1,6 @@
-import { processParameters, Parameter, ParameterType, ResourceData, processResources, createElementFromTemplate, createPath, startupCheck, getJSON } from './utils';
-import * as path from 'path';
-import { Component } from './component';
-import { access, constants} from 'fs';
-import { v4 as uuid } from 'uuid';
-import * as child_process from 'child_process';
+import { startupCheck, getJSON } from './utils';
+// import { runTemplate } from './templates';
+import { runTemplate } from './template-managers/yo';
 
 export interface ResourceConfig {
   domain: string;
@@ -24,32 +21,22 @@ export interface Channel {
 export class Resource {
 
   private rootPath: string;
-  private templatesPath: string;
   private workspacePath: string;
 
-  constructor(workspacePath?: string, templatesPath?: string) {
+  constructor(workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/resources`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','resource'));
   }
 
   public getRootPath(): string{
     return this.rootPath;
   }
 
-  public add(template: string, config: ResourceConfig): Promise<string> {
-    return new Promise( (resolve, reject) => {
-      try {
-        startupCheck();
-        let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        let srcdir = path.join(this.templatesPath, template);
-        createElementFromTemplate(srcdir, dstdir, config)
-        .then(() => {resolve(`Service "${config.name}" added in ${dstdir}`)})
-        .catch((error) => {reject(error)});
-      } catch(error) {
-        reject(error);
-      }
-    });
+  public async add(template: string, config: ResourceConfig): Promise<string> {
+      startupCheck();
+      let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
+      await runTemplate(template, dstdir, config)
+      return `Resource "${config.name}" added in ${dstdir}`
   }
 
   public getManifest(config: ResourceConfig): any {

@@ -2,8 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as utils from './utils';
 import { ncp } from 'ncp';
+// import { runTemplate } from './templates'
+import { runTemplate } from './template-managers/yo';
 
-export async function initCommand(templatesPath?:string): Promise<boolean> {
+export async function initCommand(template: string, templatesPath?: string): Promise<boolean> {
+  await runTemplate(template, '.', {})
+  return true
+}
+
+export async function initCommandOld(templatesPath?:string): Promise<boolean> {
   console.log('Initializing workspace following standard Kumori project hierarchy...');
   return new Promise<boolean>( (resolve, reject) => {
     try {

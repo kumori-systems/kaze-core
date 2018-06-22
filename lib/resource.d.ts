@@ -13,9 +13,8 @@ export interface Channel {
 }
 export declare class Resource {
     private rootPath;
-    private templatesPath;
     private workspacePath;
-    constructor(workspacePath?: string, templatesPath?: string);
+    constructor(workspacePath?: string);
     getRootPath(): string;
     add(template: string, config: ResourceConfig): Promise<string>;
     getManifest(config: ResourceConfig): any;

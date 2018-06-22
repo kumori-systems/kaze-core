@@ -7,9 +7,8 @@ export interface RuntimeConfig {
 }
 export declare class Runtime {
     private rootPath;
-    private templatesPath;
     private workspacePath;
-    constructor(workspacePath?: string, templatesPath?: string);
+    constructor(workspacePath?: string);
     add(template: string, config: RuntimeConfig): Promise<string>;
     build(config: RuntimeConfig): void;
     generateUrn(name: string, domain: string, version: string): string;

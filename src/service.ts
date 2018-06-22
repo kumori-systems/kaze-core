@@ -1,9 +1,7 @@
-import { processParameters, Parameter, ParameterType, ResourceData, processResources, createElementFromTemplate, createPath, startupCheck, getJSON } from './utils';
-import * as path from 'path';
-import { Component } from './component';
+import { processParameters, Parameter, ResourceData, processResources, startupCheck, getJSON } from './utils';
 import { access, constants} from 'fs';
-import { v4 as uuid } from 'uuid';
-import * as child_process from 'child_process';
+// import { runTemplate } from './templates';
+import { runTemplate } from './template-managers/yo';
 
 export interface ServiceConfig {
   domain: string;
@@ -25,32 +23,22 @@ export interface Channel {
 export class Service {
 
   private rootPath: string;
-  private templatesPath: string;
   private workspacePath: string;
 
-  constructor(workspacePath?: string, templatesPath?: string) {
+  constructor(workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/services`;
-    this.templatesPath = (templatesPath ? templatesPath : path.join(`${process.cwd()}`,'templates','service'));
   }
 
   public getRootPath(): string{
     return this.rootPath;
   }
 
-  public add(template: string, config: ServiceConfig): Promise<string> {
-    return new Promise( (resolve, reject) => {
-      try {
-        startupCheck();
-        let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
-        let srcdir = path.join(this.templatesPath, template);
-        createElementFromTemplate(srcdir, dstdir, config)
-        .then(() => {resolve(`Service "${config.name}" added in ${dstdir}`)})
-        .catch((error) => {reject(error)});
-      } catch(error) {
-        reject(error);
-      }
-    });
+  public async add(template: string, config: ServiceConfig): Promise<string> {
+    startupCheck();
+    let dstdir = `${this.rootPath}/${config.domain}/${config.name}`;
+    await runTemplate(template, dstdir, config)
+    return `Service "${config.name}" added in ${dstdir}`
   }
 
   public getRoles(config: ServiceConfig): Role[] {
@@ -118,7 +106,6 @@ export class Service {
 
   public getComponents(config: ServiceConfig) {
     let dependencies: string[] = [];
-    let component = new Component(this.workspacePath, this.templatesPath);
     let roles = this.getRoles(config);
     for (let role of roles) {
       dependencies.push(role.component);
