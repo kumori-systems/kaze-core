@@ -57,7 +57,7 @@ exports.test = function * (task) {
   yield task.serial(['buildtest'])
     .source("./lib-test/**/*.test.js")
     .shell({
-      cmd: 'mocha -u tdd --colors $glob',
+      cmd: 'mocha -u bdd --colors $glob',
       preferLocal: true,
       glob: true
     })

@@ -3,14 +3,41 @@ import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as assert from 'assert';
 import { workspace } from '../lib/index';
+import { Runtime } from '../lib/runtime';
 
 process.env.NODE_ENV = 'test';
 
 const KAZE_CONFIG = './kumoriConfig.json';
 const RUNTMES_DIR = './runtimes';
 
-describe('Runtime command tests', function () {
+const CONFIG = {
+    name: 'test',
+    domain: 'acme.com',
+    parent: 'eslap://eslap.cloud/runtime/native/1_1_1',
+    componentFolder: "/eslap/component",
+    entrypoint: "/eslap/runtime-agent/scripts/start-runtime-agent.sh"
+}
 
+class MockRuntimeStub {
+    public bundle(runtimeFolder: string, manifestPath: string, targetFile: string): Promise<void> {
+        try {
+            assert.equal(runtimeFolder, `./runtimes/${CONFIG.domain}/${CONFIG.name}`)
+            assert.equal(manifestPath, `./runtimes/${CONFIG.domain}/${CONFIG.name}/Manifest.json`)
+            assert.equal(targetFile, `./runtimes/${CONFIG.domain}/${CONFIG.name}/dist/bundle.zip`)
+            return Promise.resolve()
+        } catch(error) {
+            return Promise.reject(error)
+        }
+    }
+
+    public install (urn: string): Promise<any> {
+        return Promise.resolve()
+    }
+}
+
+let runtime: Runtime = new Runtime('.', new MockRuntimeStub())
+
+describe('Runtime command tests', function () {
 
     before(() => {
         writeEmptyConfigFile();
@@ -48,18 +75,11 @@ describe('Runtime command tests', function () {
     it('Create new runtime from basic template', function (done) {
         this.timeout(5000)
         try {
-            let config = {
-                name: 'test',
-                domain: 'acme.com',
-                parent: 'eslap://eslap.cloud/runtime/native/1_1_1',
-                componentFolder: "/eslap/component",
-                entrypoint: "/eslap/runtime-agent/scripts/start-runtime-agent.sh"
-            }
-            workspace.runtime.add('kumori-runtime-basic', config)
+            runtime.add('kumori-runtime-basic', CONFIG)
             .then( function (){
                 let manifest = require(`${process.env.PWD}/runtimes/acme.com/test/Manifest.json`);
-                assert.equal(manifest.name, `eslap://${config.domain}/runtime/${config.name}/0_0_1`);
-                assert.equal(manifest.derived.from, config.parent);
+                assert.equal(manifest.name, `eslap://${CONFIG.domain}/runtime/${CONFIG.name}/0_0_1`);
+                assert.equal(manifest.derived.from, CONFIG.parent);
                 let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/acme.com/test/Dockerfile`, {encoding:'utf8'});
                 assert.equal(dockerfile.startsWith('FROM eslap.cloud/runtime/native:1_1_1'),true);
                 done()
@@ -71,4 +91,33 @@ describe('Runtime command tests', function () {
             done(error);
         }
     });
+
+
+    it('Build the runtime', function (done) {
+        try {
+            runtime.build(CONFIG)
+            .then(() => {
+                done()
+            })
+            .catch((error) => {
+                done(error)
+            })
+        } catch(error) {
+            done(error)
+        }
+    })
+
+    it('Install the runtime', function (done) {
+        try {
+            runtime.install(`mockurn.com`)
+            .then(() => {
+                done()
+            })
+            .catch((error) => {
+                done(error)
+            })
+        } catch(error) {
+            done(error)
+        }
+    })
 });

@@ -23,5 +23,5 @@ export const workspace = new Workspace(new Component(),
                                        new Runtime(),
                                        new Service(),
                                        new Resource(),
-                                       new Project,
+                                       new Project(),
                                        new Stamp());

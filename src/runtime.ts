@@ -12,14 +12,29 @@ export interface RuntimeConfig {
   entrypoint?: string
 }
 
+interface bundleFunction {
+  (runtimeFolder: string, manifestPath: string, targetFile: string): Promise<void>;
+}
+
+interface installFunction {
+  (urn: string): Promise<any>;
+}
+
+export interface RuntimeStub {
+  bundle: bundleFunction;
+  install: installFunction;
+}
+
 export class Runtime {
 
   private rootPath: string;
   private workspacePath: string;
+  private runtimeStub: RuntimeStub;
 
-  constructor(workspacePath?: string) {
-    this.workspacePath = (workspacePath ? workspacePath : '.');
+  constructor(workspacePath: string = '.', runtimeStub: RuntimeStub = runtime) {
+    this.workspacePath = workspacePath;
     this.rootPath = `${this.workspacePath}/runtimes`;
+    this.runtimeStub = runtimeStub;
   }
 
   public async add(template: string, config: RuntimeConfig): Promise<string> {
@@ -40,19 +55,19 @@ export class Runtime {
     return `Runtime ${config.name} added in ${dstdir}`
   }
 
-  public build(config: RuntimeConfig) {
+  public async build(config: RuntimeConfig): Promise<void> {
     let runtimeFolder = `${this.rootPath}/${config.domain}/${config.name}`; // TODO
     let manifestPath = `${runtimeFolder}/Manifest.json`;
     let targetFile = `${runtimeFolder}/dist/bundle.zip`;
-    runtime.bundle(runtimeFolder, manifestPath, targetFile);
+    return await this.runtimeStub.bundle(runtimeFolder, manifestPath, targetFile);
   }
 
   public generateUrn(name: string, domain: string, version: string) {
     return `eslap://${domain}/runtime/${name}/${version}`
   }
 
-  public install(urn: string) {
-    return runtime.install(urn)
+  public async install(urn: string): Promise<any> {
+    return await this.runtimeStub.install(urn)
   }
 
 }
