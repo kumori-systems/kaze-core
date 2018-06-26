@@ -24,14 +24,12 @@ describe('Check stamp tests', () => {
 
   it('Check correct stamp', async function() {
     let result = await utils.checkStamp(MOCK_STAMP, false)
-    console.log("STATUS", result);
     assert.equal(result.successful, true);
     assert.equal(result.code, 200);
   });
 
   it('Check wrong stamp URL', async function() {
     let result = await utils.checkStamp('FAKE_STAMP', false)
-    console.log("STATUS", result);
     assert.equal(result.successful, false);
     assert.equal(result.code, undefined);
   });

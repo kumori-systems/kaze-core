@@ -5,7 +5,7 @@ import { ncp } from 'ncp';
 // import { runTemplate } from './templates'
 import { runTemplate } from './template-managers/yo';
 
-export async function initCommand(template: string, templatesPath?: string): Promise<boolean> {
+export async function initCommand(template: string): Promise<boolean> {
   await runTemplate(template, '.', {})
   return true
 }

@@ -47,9 +47,17 @@ export class Workspace {
     return deployCommand(paths, stamp);
   }
 
-  // Registers a deployment manifest in a target stamp. If any of the
-  // deployment manifest dependencies are not registered in the target stamp
-  // and are available in the workspace, they are bundled to and registered.
+  /**
+   * Creates a bundle with the deployment configuration and any other element needed and not already registered in the stamp (currently this only includes the service manifest and the components).
+   *
+   * @param name The deployment name in the workspace.
+   * @param stamp The stamp where the service instance will be deployed.
+   * @param addRandomInbounds If true, inbounds with random domains will be created.
+   * @param buildComponents If true, a service component will be built if it is not registered in the target stamp and it has not a distributable file.
+   * @param forceBuildComponents If true, a service component will be built if it is not registered in the target stamp, even if already exists a distributable file for this component.
+   *
+   * @returns A promise resolved with information about the registration process results.
+   */
   public deployWithDependencies(
     name: string,
     stamp: string,
@@ -184,8 +192,8 @@ export class Workspace {
     return infoCommand(requestedInfo, stamp);
   }
 
-  public init(template: string, configFileName?: string): Promise<boolean> {
-    return initCommand(template, configFileName);
+  public init(template: string): Promise<boolean> {
+    return initCommand(template);
   }
 
   public register(paths: string[], stamp: string): Promise<any> {
