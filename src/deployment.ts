@@ -26,12 +26,14 @@ export class Deployment {
     if (!config.service.version) {
       throw new Error('Service version missing');
     }
-    let templateConfig = {
+    let templateConfig:any = {
       name: config.name,
       parameters: null,
       resources: null,
       roles: null,
-      service: config.service
+      serviceName: config.service.name,
+      serviceDomain: config.service.domain,
+      serviceVersion: config.service.version
     };
     let dstdir = `${this.rootPath}/${config.name}`;
     // Adds the roles configurarion to the parameters needed by the

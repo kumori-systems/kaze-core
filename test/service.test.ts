@@ -65,7 +65,7 @@ describe('Service command tests', function () {
 
     it('add', function () {
         this.timeout(5000)
-        return service.add('kumori-templates:service-basic', CONFIG1)
+        return service.add('kumori-workspace:service-basic', CONFIG1)
         .then( () => {
             let data = fs.readFileSync(`${SERVICES_DIR}/${CONFIG1.domain}/${CONFIG1.name}/Manifest.json`,'utf8');
             assert.equal(data.includes(`eslap://${CONFIG1.domain}/services/${CONFIG1.name}/0_0_1`), true);
@@ -78,7 +78,7 @@ describe('Service command tests', function () {
 
     it('getRoles', function() {
         this.timeout(5000)
-        return project.add('kumori-templates:project-hello-world', CONFIG2)
+        return project.add('kumori-workspace:project-hello-world', CONFIG2)
         .then(function () {
             let roles = service.getRoles(CONFIG2)
             assert.equal(roles.length, 1)

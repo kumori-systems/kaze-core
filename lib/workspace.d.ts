@@ -19,7 +19,7 @@ export declare class Workspace {
     constructor(component: Component, deployment: Deployment, localStamp: LocalStamp, runtime: Runtime, service: Service, resource: Resource, project: Project, stamp: Stamp);
     bundle(paths: string[]): Promise<any>;
     deploy(paths: string[], stamp: string): Promise<any>;
-    deployWithDependencies(name: string, stamp: string, addRandomInbounds?: boolean): Promise<any>;
+    deployWithDependencies(name: string, stamp: string, addRandomInbounds: boolean, buildComponents: boolean, forceBuildComponents: boolean): Promise<any>;
     info(requestedInfo: string, stamp: string): Promise<any>;
     init(template: string, configFileName?: string): Promise<boolean>;
     register(paths: string[], stamp: string): Promise<any>;

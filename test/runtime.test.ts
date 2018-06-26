@@ -75,12 +75,12 @@ describe('Runtime command tests', function () {
     it('Create new runtime from basic template', function (done) {
         this.timeout(5000)
         try {
-            runtime.add('kumori-templates:runtime-basic', CONFIG)
+            runtime.add('kumori-workspace:runtime-basic', CONFIG)
             .then( function (){
-                let manifest = require(`${process.env.PWD}/runtimes/acme.com/test/Manifest.json`);
+                let manifest = require(`${process.env.PWD}/runtimes/${CONFIG.domain}/${CONFIG.name}/Manifest.json`);
                 assert.equal(manifest.name, `eslap://${CONFIG.domain}/runtime/${CONFIG.name}/0_0_1`);
                 assert.equal(manifest.derived.from, CONFIG.parent);
-                let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/acme.com/test/Dockerfile`, {encoding:'utf8'});
+                let dockerfile:string = fs.readFileSync(`${process.env.PWD}/runtimes/${CONFIG.domain}/${CONFIG.name}/Dockerfile`, {encoding:'utf8'});
                 assert.equal(dockerfile.startsWith('FROM eslap.cloud/runtime/native:1_1_1'),true);
                 done()
             })

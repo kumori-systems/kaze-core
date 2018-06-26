@@ -1,4 +1,4 @@
-import { Component } from './component';
+import { Component, ComponentConfig } from './component';
 import { Deployment } from './deployment';
 import { Service, ServiceConfig } from './service';
 import { Resource } from './resource'
@@ -50,7 +50,13 @@ export class Workspace {
   // Registers a deployment manifest in a target stamp. If any of the
   // deployment manifest dependencies are not registered in the target stamp
   // and are available in the workspace, they are bundled to and registered.
-  public deployWithDependencies(name: string, stamp: string, addRandomInbounds?: boolean): Promise<any> {
+  public deployWithDependencies(
+    name: string,
+    stamp: string,
+    addRandomInbounds: boolean,
+    buildComponents: boolean,
+    forceBuildComponents: boolean
+  ): Promise<any> {
     try {
       let config = readConfigFile();
       stamp = ( stamp ? stamp : config['working-stamp'] );
@@ -58,8 +64,8 @@ export class Workspace {
         return Promise.reject(new Error('Stamp not specified and default stamp not found.'));
       }
       let toBeBundled: string [] = [];
+      let toBeRebuild:ComponentConfig[] = []
       let blobs:{pathInZip: string, data: Buffer}[] = []
-      let deployUuid : string;
       let manifest = this.deployment.getManifest(name);
       if (addRandomInbounds) {
         manifest.name = uuid().replace("_", "-");
@@ -93,8 +99,22 @@ export class Workspace {
                 let componentConfig = this.component.parseName(name);
                 return this.component.getDistributableFile(componentConfig)
                 .then((filepath) => {
-                  toBeBundled.push(filepath);
+                  if (forceBuildComponents) {
+                    toBeRebuild.push(componentConfig)
+                  } else {
+                    toBeBundled.push(filepath);
+                  }
                   return Promise.resolve();
+                })
+                .catch((error) => {
+                  let rebuild: boolean = (error.message && (error.message.indexOf('Distributable file not') != -1))
+                  rebuild = rebuild && (buildComponents || forceBuildComponents)
+                  if (rebuild) {
+                    toBeRebuild.push(componentConfig)
+                    return Promise.resolve();
+                  } else {
+                    return Promise.reject(error)
+                  }
                 })
               } else {
                 return Promise.resolve();
@@ -103,6 +123,25 @@ export class Workspace {
           })(name);
         }
         return Promise.all(promises);
+      })
+      .then(() => {
+        let promise = Promise.resolve('')
+        for (let config of toBeRebuild) {
+          ((config) => {
+            promise = promise.then(() => {
+              console.log(`Rebuilding ${config.name}`)
+              return this.component.build(config)
+              .then(() => {
+                return this.component.getDistributableFile(config)
+              })
+              .then((filepath) => {
+                toBeBundled.push(filepath)
+                return('')
+              })
+            })
+          })(config);
+        }
+        return promise
       })
       .then(() => {
         if (addRandomInbounds) {
