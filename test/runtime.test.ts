@@ -75,7 +75,7 @@ describe('Runtime command tests', function () {
     it('Create new runtime from basic template', function (done) {
         this.timeout(5000)
         try {
-            runtime.add('kumori-runtime-basic', CONFIG)
+            runtime.add('kumori-templates:runtime-basic', CONFIG)
             .then( function (){
                 let manifest = require(`${process.env.PWD}/runtimes/acme.com/test/Manifest.json`);
                 assert.equal(manifest.name, `eslap://${CONFIG.domain}/runtime/${CONFIG.name}/0_0_1`);
