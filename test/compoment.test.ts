@@ -61,7 +61,7 @@ describe('Components command tests', function () {
   it('add', function (done) {
     this.timeout(5000)
     try {
-      component.add('kumori-workspace:component-javascript', CONFIG)
+      component.add('@kumori/workspace:component-javascript', CONFIG)
       .then( () => {
         let data = fs.readFileSync(`${process.env.PWD}/components/${CONFIG.domain}/${CONFIG.name}/Manifest.json`,'utf8');
         assert.equal(data.includes(`eslap://${CONFIG.domain}/components/${CONFIG.name}/0_0_1`), true);

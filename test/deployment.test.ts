@@ -161,7 +161,7 @@ describe('Deployment command tests', function () {
   it('add', function (done) {
     this.timeout(5000)
     try {
-      deployment.add('kumori-workspace:deployment-basic', CONFIG)
+      deployment.add('@kumori/workspace:deployment-basic', CONFIG)
       .then( () => {
         let manifest = getJSON(`${DEPLOYMENTS_DIR}/${CONFIG.name}/Manifest.json`);
         assert.equal(manifest.servicename, `eslap://${CONFIG.service.domain}/services/${CONFIG.service.name}/0_0_1`);

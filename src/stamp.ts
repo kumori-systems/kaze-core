@@ -1,6 +1,6 @@
 import * as utils from './utils';
 import { createReadStream, constants } from 'fs';
-import { StampStubFactory, FileStream, RegistrationResult } from './stamp-manager';
+import { Deployment, StampStubFactory, FileStream, RegistrationResult } from './stamp-manager';
 
 export class Stamp {
 
@@ -74,20 +74,12 @@ export class Stamp {
     //  otherwise.
     public isRegistered(stamp: string, name: string): Promise<boolean> {
       try {
-        if (!stamp) {
-          return Promise.reject(new Error('Stamp name parameter is missing'));
-        }
+        let stampConfig = this._getStampConfig(stamp)
         if (!name) {
           return Promise.reject(new Error('Element name parameter is missing'));
         }
-        let workspaceConfig = utils.readConfigFile();
-        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
-        if (!stampConfig) {
-          return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
-        }
         let admissionUrl = stampConfig.admission
         let token = stampConfig.token
-        // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
         let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
         return admission.findStorage()
         .then((result) => {
@@ -104,7 +96,7 @@ export class Stamp {
         })
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());
-        return Promise.reject(`Error searching for ${name} in ${stamp}: ${message}`);
+        return Promise.reject(new Error(`Error searching for ${name} in ${stamp}: ${message}`));
       }
       // return Promise.resolve(false);
     }
@@ -135,23 +127,15 @@ export class Stamp {
      */
     public register(stamp: string, bundle: string): Promise<RegistrationResult> {
       try {
-        if (!stamp) {
-          return Promise.reject(new Error('Stamp name parameter is missing'));
-        }
+        let stampConfig = this._getStampConfig(stamp)
         if (!bundle) {
           return Promise.reject(new Error('The path to the bundle parameter is missing'));
-        }
-        let workspaceConfig = utils.readConfigFile();
-        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
-        if (!stampConfig) {
-          return Promise.reject(new Error(`Stamp ${stamp} not registered in the workspace`));
         }
 
         return utils.access(bundle, constants.R_OK)
         .then(() => {
           let admissionUrl = stampConfig.admission
           let token = stampConfig.token
-          // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
           let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
           let stream = createReadStream(bundle);
           let fileStream = new FileStream(stream);
@@ -172,21 +156,12 @@ export class Stamp {
 
     public async unregister(stamp: string, urn: string): Promise<boolean> {
       try {
-        if (!stamp) {
-          throw new Error('Stamp name parameter is missing');
-        }
+        let stampConfig = this._getStampConfig(stamp)
         if (!urn) {
           throw new Error('The element URN is missing');
         }
-        let workspaceConfig = utils.readConfigFile();
-        let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
-        if (!stampConfig) {
-          throw new Error(`Stamp ${stamp} not registered in the workspace`);
-        }
-
         let admissionUrl = stampConfig.admission
         let token = stampConfig.token
-        // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
         let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
         await admission.removeStorage(urn)
         return true
@@ -199,6 +174,26 @@ export class Stamp {
         }
         throw new Error(message);
       }
+    }
+
+    public async findDeployments (stamp: string, urn?: string, owner?: string): Promise<{[key: string]:Deployment}> {
+      let stampConfig = this._getStampConfig(stamp)
+      let admissionUrl = stampConfig.admission
+      let token = stampConfig.token
+      let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
+      return await admission.findDeployments(urn, owner)
+    }
+
+    private _getStampConfig(stamp: string): utils.StampConfig {
+      if (!stamp) {
+        throw new Error('Stamp name parameter is missing');
+      }
+      let workspaceConfig = utils.readConfigFile();
+      let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
+      if (!stampConfig) {
+        throw new Error(`Stamp ${stamp} not registered in the workspace`);
+      }
+      return stampConfig
     }
 
   }

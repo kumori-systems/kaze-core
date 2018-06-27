@@ -13,7 +13,7 @@ describe('Init command tests', function () {
 
   it('Init command creates properly all directories', function (done) {
     this.timeout(5000)
-    workspace.init('kumori-workspace')
+    workspace.init('@kumori/workspace')
       .then(success => {
         assert.equal(success, true);
         assert.equal(fs.existsSync('builts'), true);
@@ -33,7 +33,7 @@ describe('Init command tests', function () {
 
   it('Init command should work with partial initialized workspaces', function (done) {
     this.timeout(5000)
-    workspace.init('kumori-workspace')
+    workspace.init('@kumori/workspace')
       .then(success => {
         assert.equal(success, true);
         done();

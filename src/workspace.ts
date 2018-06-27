@@ -16,6 +16,11 @@ import { readConfigFile, checkStamp, StampStatus, getStampUrl, startupCheck, get
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import * as tshirt from './tshirt-patch';
+import { RegistrationResult } from './stamp-manager'
+
+export class ExtendedRegistrationResult extends RegistrationResult {
+  public skipped?: string[]
+}
 
 export class Workspace {
 
@@ -64,9 +69,10 @@ export class Workspace {
     addRandomInbounds: boolean,
     buildComponents: boolean,
     forceBuildComponents: boolean
-  ): Promise<any> {
+  ): Promise<RegistrationResult> {
     try {
       let config = readConfigFile();
+      let skipped:string[] = []
       stamp = ( stamp ? stamp : config['working-stamp'] );
       if (!stamp) {
         return Promise.reject(new Error('Stamp not specified and default stamp not found.'));
@@ -92,6 +98,7 @@ export class Workspace {
             return Promise.resolve(serviceConfig);
           })
         } else {
+          skipped.push(manifest.servicename)
           return Promise.resolve(serviceConfig);
         }
       })
@@ -125,6 +132,7 @@ export class Workspace {
                   }
                 })
               } else {
+                skipped.push(name)
                 return Promise.resolve();
               }
             }));
@@ -156,7 +164,6 @@ export class Workspace {
           let serviceConfig = this.deployment.getService(name)
           let serviceManifest = this.service.getManifest(serviceConfig)
           if (serviceManifest.channels && serviceManifest.channels.provides && serviceManifest.channels.provides.length > 0) {
-            let serviceName = serviceManifest.name
             for (let i in serviceManifest.channels.provides) {
               let inboundName = `inbound-deployment-${i}`
               let channel = serviceManifest.channels.provides[i]
@@ -182,6 +189,11 @@ export class Workspace {
       .then((zipfileath) => {
         return this.stamp.register(stamp, zipfileath);
       })
+      .then((result) => {
+        let extendedResult:ExtendedRegistrationResult = result
+        extendedResult.skipped = skipped
+        return extendedResult
+      })
       // return Promise.reject(new Error('Not implemented'));
     } catch(error) {
       return Promise.reject(error);
@@ -189,7 +201,7 @@ export class Workspace {
   }
 
   public info(requestedInfo: string, stamp: string): Promise<any> {
-    return infoCommand(requestedInfo, stamp);
+    return infoCommand(requestedInfo, stamp, this.stamp);
   }
 
   public init(template: string): Promise<boolean> {

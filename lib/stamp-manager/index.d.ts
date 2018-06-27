@@ -1,6 +1,9 @@
-import { AdmissionClient, DeploymentInstanceInfo, DeploymentModification, FileStream, RegistrationResult } from "@kumori/admission-client";
-export { DeploymentInstanceInfo, DeploymentModification, FileStream, RegistrationResult, ScalingDeploymentModification } from "@kumori/admission-client";
+import { AdmissionClient, Deployment, DeploymentInstanceInfo, DeploymentModification, FileStream, RegistrationResult } from "@kumori/admission-client";
+export { Deployment, DeploymentInstanceInfo, DeploymentModification, FileStream, RegistrationResult, ScalingDeploymentModification } from "@kumori/admission-client";
 export interface StampStub {
+    findDeployments(urn?: string, owner?: string): Promise<{
+        [key: string]: Deployment;
+    }>;
     findStorage(): Promise<string[]>;
     getStorageManifest(urn: string): Promise<any>;
     modifyDeployment(configuration: DeploymentModification): Promise<any>;

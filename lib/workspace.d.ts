@@ -7,6 +7,10 @@ import { Project } from './project';
 import { Runtime } from './runtime';
 import { Stamp } from './stamp';
 import { StampStatus } from './utils';
+import { RegistrationResult } from './stamp-manager';
+export declare class ExtendedRegistrationResult extends RegistrationResult {
+    skipped?: string[];
+}
 export declare class Workspace {
     component: Component;
     deployment: Deployment;
@@ -30,7 +34,7 @@ export declare class Workspace {
      *
      * @returns A promise resolved with information about the registration process results.
      */
-    deployWithDependencies(name: string, stamp: string, addRandomInbounds: boolean, buildComponents: boolean, forceBuildComponents: boolean): Promise<any>;
+    deployWithDependencies(name: string, stamp: string, addRandomInbounds: boolean, buildComponents: boolean, forceBuildComponents: boolean): Promise<RegistrationResult>;
     info(requestedInfo: string, stamp: string): Promise<any>;
     init(template: string): Promise<boolean>;
     register(paths: string[], stamp: string): Promise<any>;

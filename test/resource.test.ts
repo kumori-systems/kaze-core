@@ -58,7 +58,7 @@ describe('Resource command tests', function () {
 
     it('add and getManifest', function () {
         this.timeout(5000)
-        return resource.add('kumori-workspace:resource-vhost', CONFIG)
+        return resource.add('@kumori/workspace:resource-vhost', CONFIG)
         .then( () => {
             let data = resource.getManifest(CONFIG);
             assert.equal(data.name, `eslap://${CONFIG.domain}/resources/vhost/${CONFIG.name}`);

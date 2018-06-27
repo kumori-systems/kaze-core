@@ -1,8 +1,7 @@
 import * as utils from './utils';
-import * as request from 'request';
-import { AdmissionClient, Deployment } from '@kumori/admission-client';
+import { Stamp } from './stamp';
 
-async function getDeployments(stamp: string): Promise<any> {
+async function getDeployments(stamp: string, stampStub: Stamp): Promise<any> {
   let workspaceConfig = utils.readConfigFile();
   let stampConfig:utils.StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
   if (!stampConfig) {
@@ -10,8 +9,7 @@ async function getDeployments(stamp: string): Promise<any> {
   }
   let admissionUrl = stampConfig.admission
   let token = stampConfig.token
-  let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
-  let deployments:{[key: string]: Deployment} = await admission.findDeployments();
+  let deployments = await stampStub.findDeployments(stamp);
   for (let depName in deployments) {
     let deployment = deployments[depName]
 
@@ -33,13 +31,8 @@ async function getDeployments(stamp: string): Promise<any> {
   }
 }
 
-export async function infoCommand(requestedInfo: string, stamp: string): Promise<any> {
+export async function infoCommand(requestedInfo: string, stamp: string, stampStub: Stamp): Promise<any> {
   // Supported information retrieval
-  let response = {
-    successful: [],
-    errors: [],
-    deployments: []
-  }
   if (requestedInfo == null) {
     return Promise.reject({
       err: 'Undefined information retrieval option',
@@ -52,7 +45,7 @@ export async function infoCommand(requestedInfo: string, stamp: string): Promise
     })
   }
   try {
-    await getDeployments(stamp);
+    await getDeployments(stamp, stampStub);
     return Promise.resolve(true);
   } catch(e) {
     return Promise.reject({

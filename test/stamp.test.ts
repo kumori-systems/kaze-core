@@ -108,7 +108,7 @@ describe('Stamp command', () => {
         throw new Error('isRegistered with wrong id unexpectedly resolved')
       })
       .catch((error) => {
-        error.message.should.startWith('Stamp wrong not registered in the workspace')
+        error.message.should.endWith('Stamp wrong not registered in the workspace')
       })
     })
   })
@@ -137,7 +137,7 @@ describe('Stamp command', () => {
         return Promise.reject("Incorrectly succeed with wrong id")
       })
       .catch((error) => {
-        error.message.should.startWith('Stamp wrong not registered in the workspace')
+        error.message.should.endWith('Stamp wrong not registered in the workspace')
       })
     })
 

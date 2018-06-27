@@ -1,5 +1,5 @@
 import * as utils from './utils';
-import { StampStubFactory, RegistrationResult } from './stamp-manager';
+import { Deployment, StampStubFactory, RegistrationResult } from './stamp-manager';
 export declare class Stamp {
     private stampStubFactory;
     constructor(stampStubFactory: StampStubFactory);
@@ -19,4 +19,8 @@ export declare class Stamp {
      */
     register(stamp: string, bundle: string): Promise<RegistrationResult>;
     unregister(stamp: string, urn: string): Promise<boolean>;
+    findDeployments(stamp: string, urn?: string, owner?: string): Promise<{
+        [key: string]: Deployment;
+    }>;
+    private _getStampConfig;
 }

@@ -6,6 +6,8 @@ Bug fix. Now the template is checked before creating the new element folder in t
 Templates has been changed to remove temporary and dependency folders after building the final distributable zip.
 Now this library depends only on npm targets 'devinit', 'superclean' y 'dist'.
 Changed `@kumori/runtime` dependency to 1.1.1.
+Templates moved from this repo to a yeoman (http://yeoman.io/).
+Defined a interface StampStub to decouple the workspace lib of @kumori/admission-client.
 
 ## v1.0.4
 

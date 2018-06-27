@@ -19,6 +19,7 @@
     "url": "https://github.com/kumori-systems/workspace.git"
   },
   "devDependencies": {
+    "@kumori/generator-workspace": "git+ssh://git@gitlab.com/kumori/tools/generator-workspace.git#ticket1261",
     "@taskr/clear": "^1.1.0",
     "@taskr/shell": "^1.1.0",
     "@taskr/typescript": "^1.1.0",
@@ -54,7 +55,6 @@
     "chalk": "2.3.0",
     "denodeify": "1.2.1",
     "dot": "1.1.2",
-    "generator-kumori-workspace": "git+ssh://git@gitlab.com/jbgisber/generator-kumori-workspace.git#master",
     "mkdirp": "0.5.1",
     "ncp": "2.0.0",
     "read": "1.0.7",

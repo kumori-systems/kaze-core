@@ -1,5 +1,6 @@
 import {
     AdmissionClient,
+    Deployment,
     DeploymentInstanceInfo,
     DeploymentModification,
     FileStream,
@@ -7,6 +8,7 @@ import {
 } from "@kumori/admission-client"
 
 export {
+    Deployment,
     DeploymentInstanceInfo,
     DeploymentModification,
     FileStream,
@@ -15,6 +17,7 @@ export {
 } from "@kumori/admission-client"
 
 export interface StampStub {
+    findDeployments (urn?: string, owner?: string): Promise<{[key: string]:Deployment}>
     findStorage(): Promise<string[]>
     getStorageManifest(urn: string): Promise<any>
     modifyDeployment (configuration: DeploymentModification): Promise<any>

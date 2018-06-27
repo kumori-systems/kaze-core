@@ -54,7 +54,7 @@ describe('Project command tests', function () {
             name: 'test',
             domain: 'acme.com'
         }
-        workspace.project.add('kumori-workspace:project-hello-world', config)
+        workspace.project.add('@kumori/workspace:project-hello-world', config)
         .then(success => {
             assert.equal(fs.existsSync('components/acme.com/test'), true);
             assert.equal(fs.existsSync('services/acme.com/test'), true);

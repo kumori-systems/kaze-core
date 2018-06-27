@@ -1,4 +1,5 @@
 import {
+    Deployment,
     DeploymentInstanceInfo,
     DeploymentModification,
     StampStubFactory,
@@ -14,6 +15,11 @@ class MockAdmissionClient {
     findStorage(): Promise<string[]> {
         return Promise.resolve(['mockElement'])
     }
+
+    findDeployments (urn?: string, owner?: string): Promise<{[key: string]:Deployment}> {
+        return Promise.resolve({})
+    }
+
     sendBundle(bundlesZip?: FileStream, bundlesJson?: FileStream): Promise<RegistrationResult> {
         let result:RegistrationResult = {
             successful: [],
