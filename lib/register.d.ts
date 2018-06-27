@@ -1,1 +1,2 @@
-export declare function registerCommand(paths: string[], stamp: string): Promise<any>;
+import { Stamp } from './stamp';
+export declare function registerCommand(paths: string[], stamp: string, stampStub: Stamp): Promise<any>;

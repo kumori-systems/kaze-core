@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/stamp-manager/index.ts"],"names":[],"mappings":";;AAAA,+DAA0F;AAC1F,6DAAyE;AAAhE,wCAAA,UAAU,CAAA;AAAE,gDAAA,kBAAkB,CAAA;AAavC,mBAA2B,SAAQ,kCAAe;CACjD;AADD,sCACC;AAED;IACW,OAAO,CAAE,QAAgB,EAAE,WAAoB;QAClD,OAAO,IAAI,aAAa,CAAC,QAAQ,EAAE,WAAW,CAAC,CAAA;IACnD,CAAC;CACJ;AAJD,oDAIC"}

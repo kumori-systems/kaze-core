@@ -4,6 +4,8 @@ import * as rimraf from 'rimraf';
 import * as assert from 'assert';
 import { workspace } from '../lib/index';
 import * as mkdirp from 'mkdirp';
+import { Deployment } from '../lib/deployment'
+import { AdmissionClient } from '@kumori/admission-client'
 
 process.env.NODE_ENV = 'test';
 

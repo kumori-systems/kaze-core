@@ -1,15 +1,19 @@
-import * as path from 'path';
 import * as utils from './utils';
-import { AdmissionClient, FileStream, RegistrationResult } from '@kumori/admission-client';
-import { createReadStream, access, constants } from 'fs';
+import { createReadStream, constants } from 'fs';
+import { StampStubFactory, FileStream, RegistrationResult } from './stamp-manager';
 
 export class Stamp {
 
-    public add(id: string, stampConfig: utils.StampConfig, defaultStamp: boolean) {
+    private stampStubFactory: StampStubFactory
+
+    constructor(stampStubFactory: StampStubFactory) {
+      this.stampStubFactory = stampStubFactory
+    }
+
+    public add(id: string, stampConfig: utils.StampConfig, defaultStamp: boolean): void {
       let workspaceConfig = utils.readConfigFile();
       if (workspaceConfig['stamps'][id]) {
-        console.error(`${utils.configuration.configFileName} already has a stamp with id: ${id}`);
-        return;
+        throw new Error(`${utils.configuration.configFileName} already has a stamp with id: ${id}`)
       }
       if (defaultStamp || (workspaceConfig['working-stamp'] == workspaceConfig['stamps'][id])) {
         workspaceConfig['working-stamp'] = id;
@@ -21,11 +25,10 @@ export class Stamp {
       utils.overwriteConfigFile(workspaceConfig);
     }
 
-    public update(id: string, stampConfig: utils.StampConfig) {
+    public update(id: string, stampConfig: utils.StampConfig): void {
       let workspaceConfig = utils.readConfigFile();
       if (!workspaceConfig['stamps'][id]) {
-        console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
-        return;
+        throw new Error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`)
       }
 
       let configCopy:utils.StampConfig = Object.assign({}, stampConfig);
@@ -34,7 +37,7 @@ export class Stamp {
       utils.overwriteConfigFile(workspaceConfig);
     }
 
-    public remove(id: string) {
+    public remove(id: string): void {
       let workspaceConfig = utils.readConfigFile();
       if (!workspaceConfig['stamps'][id]) {
         console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
@@ -50,7 +53,7 @@ export class Stamp {
       utils.overwriteConfigFile(workspaceConfig);
     }
 
-    public use(id: string) {
+    public use(id: string): void {
       let workspaceConfig = utils.readConfigFile();
       if (!workspaceConfig['stamps'][id]) {
         console.error(`${utils.configuration.configFileName} does not contain any stamp with id: ${id}`);
@@ -84,7 +87,8 @@ export class Stamp {
         }
         let admissionUrl = stampConfig.admission
         let token = stampConfig.token
-        let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+        // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+        let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
         return admission.findStorage()
         .then((result) => {
           for (let element of result) {
@@ -122,13 +126,13 @@ export class Stamp {
       }
     }
 
-    // Registers a bundle in a stamp using AdmissionClient.
-    //
-    // Parameters:
-    // * `stamp`: the stamp id as rgistered in configurationFile.
-    // * `bundle`: the path to the bundle file.
-    //
-    // Returns: a RegistrationResult with the results.
+    /**
+     * Registers a bundle in a target stamp.
+     *
+     * @param stamp The stamp id as registered in the configuration file
+     * @param bundle The path to the bundle to be registred
+     * @returns The result returned by the stamp.
+     */
     public register(stamp: string, bundle: string): Promise<RegistrationResult> {
       try {
         if (!stamp) {
@@ -147,20 +151,21 @@ export class Stamp {
         .then(() => {
           let admissionUrl = stampConfig.admission
           let token = stampConfig.token
-          let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+          // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+          let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
           let stream = createReadStream(bundle);
           let fileStream = new FileStream(stream);
           return admission.sendBundle(fileStream);
-        }, (error) => {
-          return Promise.reject(`Bundle ${bundle} not available in the workspace`);
+        }, () => {
+          return Promise.reject(new Error(`Bundle ${bundle} not available in the workspace`));
         })
         .catch((error) => {
           let message = ((error && error.message) ? error.message : error.toString());
-          return Promise.reject(`Error registering ${bundle} in ${stamp}: ${message}`);
+          return Promise.reject(new Error(`Error registering ${bundle} in ${stamp}: ${message}`));
         })
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());
-        return Promise.reject(`Error registering ${bundle} in ${stamp}: ${message}`);
+        return Promise.reject(new Error(`Error registering ${bundle} in ${stamp}: ${message}`));
       }
 
     }
@@ -181,15 +186,15 @@ export class Stamp {
 
         let admissionUrl = stampConfig.admission
         let token = stampConfig.token
-        let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
-        let manifest = await admission.getStorageManifest(urn)
+        // let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+        let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token)
         await admission.removeStorage(urn)
         return true
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());
         if (message.indexOf(" Error code 23 - Rsync command") != -1) {
           message = `Element ${urn} is not registered in stamp ${stamp}`
-        } else {
+        } else if (message.indexOf('not registered in the workspace') == -1) {
           message = `Element ${urn} unregistration process failed in stamp ${stamp}`
         }
         throw new Error(message);

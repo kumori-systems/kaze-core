@@ -1,6 +1,6 @@
-import { Component, ComponentConfig } from './component';
-import { Deployment, DeploymentConfig } from './deployment';
-import { Service, ServiceConfig } from './service';
+import { Component } from './component';
+import { Deployment } from './deployment';
+import { Service } from './service';
 import { Resource } from './resource';
 import { LocalStamp} from './localstamp';
 import { Runtime } from './runtime';
@@ -15,7 +15,7 @@ export { ServiceConfig } from './service';
 export { DeploymentConfig } from './deployment';
 export { RuntimeConfig } from './runtime';
 export { ResourceConfig } from './resource';
-
+import { StampStubFactoryImpl } from './stamp-manager'
 
 export const workspace = new Workspace(new Component(),
                                        new Deployment(),
@@ -24,4 +24,4 @@ export const workspace = new Workspace(new Component(),
                                        new Service(),
                                        new Resource(),
                                        new Project(),
-                                       new Stamp());
+                                       new Stamp(new StampStubFactoryImpl()));

@@ -4,8 +4,7 @@ import { bundleCommand } from './bundle';
 import * as fs from 'fs';
 import { Stamp } from './stamp';
 
-export async function registerCommand(paths: string[], stamp: string): Promise<any> {
-  let stampStub = new Stamp();
+export async function registerCommand(paths: string[], stamp: string, stampStub: Stamp): Promise<any> {
   let response = {
     successful: [],
     errors: [],

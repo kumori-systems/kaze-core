@@ -74,6 +74,7 @@ describe('Service command tests', function () {
 
     it('getRootPath', function () {
         assert.equal(service.getRootPath(), './services')
+        assert.equal(path.relative(service.getRootPath(), SERVICES_DIR), '')
     })
 
     it('getRoles', function() {

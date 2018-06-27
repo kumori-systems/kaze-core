@@ -44,7 +44,7 @@ export class Workspace {
   }
 
   public deploy(paths: string[], stamp: string): Promise<any> {
-    return deployCommand(paths, stamp);
+    return deployCommand(paths, stamp, this.stamp);
   }
 
   /**
@@ -197,7 +197,7 @@ export class Workspace {
   }
 
   public register(paths: string[], stamp: string): Promise<any> {
-    return registerCommand(paths, stamp);
+    return registerCommand(paths, stamp, this.stamp);
   }
 
   public undeploy(uris: string[], stamp: string): Promise<any> {
