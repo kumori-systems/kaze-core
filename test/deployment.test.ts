@@ -1,11 +1,11 @@
-import { writeEmptyConfigFile, getJSON } from '../lib/utils';
-import * as fs from 'fs';
-import * as rimraf from 'rimraf';
-import * as assert from 'assert';
-import { workspace } from '../lib/index';
-import * as mkdirp from 'mkdirp';
+import { writeEmptyConfigFile, getJSON } from '../lib/utils'
+import * as fs from 'fs'
+import * as rimraf from 'rimraf'
+import * as assert from 'assert'
+import * as mkdirp from 'mkdirp'
+import * as path from 'path'
+import { MOCK_URN, MOCK_RESPONSE, MockStampStubFactory } from './mock-stamp-stub'
 import { Deployment } from '../lib/deployment'
-import { AdmissionClient } from '@kumori/admission-client'
 
 process.env.NODE_ENV = 'test';
 
@@ -13,6 +13,16 @@ const KAZE_CONFIG = `${process.env.PWD}/kumoriConfig.json`;
 const DEPLOYMENTS_DIR = `${process.env.PWD}/deployments`;
 const SERVICES_DIR = `${process.env.PWD}/services`;
 const COMPONENTS_DIR = `${process.env.PWD}/components`;
+
+const CONFIG = {
+  name: 'test',
+  service: {
+    domain: 'acme.com',
+    name: 'test',
+    version: '0_0_1'
+  }
+}
+
 
 function createMockService() {
   mkdirp.sync(`${SERVICES_DIR}/acme.com/test`);
@@ -104,6 +114,8 @@ function createMockComponent() {
   fs.writeFileSync(`${COMPONENTS_DIR}/acme.com/test/Manifest.json`, data);
 }
 
+let deployment = new Deployment(new MockStampStubFactory())
+
 describe('Deployment command tests', function () {
 
   before(() => {
@@ -146,22 +158,14 @@ describe('Deployment command tests', function () {
     }
   });
 
-  it('Create new deployment', function (done) {
+  it('add', function (done) {
     this.timeout(5000)
     try {
-      let config = {
-        name: 'test',
-        service: {
-          domain: 'acme.com',
-          name: 'test',
-          version: '0_0_1'
-        }
-      }
-      workspace.deployment.add('kumori-workspace:deployment-basic', config)
+      deployment.add('kumori-workspace:deployment-basic', CONFIG)
       .then( () => {
-        let manifest = getJSON(`${DEPLOYMENTS_DIR}/${config.name}/Manifest.json`);
-        assert.equal(manifest.servicename, `eslap://${config.service.domain}/services/${config.service.name}/0_0_1`);
-        assert.equal(manifest.nickname, config.name);
+        let manifest = getJSON(`${DEPLOYMENTS_DIR}/${CONFIG.name}/Manifest.json`);
+        assert.equal(manifest.servicename, `eslap://${CONFIG.service.domain}/services/${CONFIG.service.name}/0_0_1`);
+        assert.equal(manifest.nickname, CONFIG.name);
         let roleResources = {
           "__instances": 1,
           "__maxinstances": 3,
@@ -202,4 +206,49 @@ describe('Deployment command tests', function () {
      done(error);
     }
   });
+
+  it('getService and getManifest', function () {
+    let config = deployment.getService(CONFIG.name)
+    assert.equal(config.name, CONFIG.service.name)
+    assert.equal(config.domain, CONFIG.service.domain)
+    assert.equal(config.version, CONFIG.service.version)
+  });
+
+  it('getDistributableFile', function() {
+    return deployment.getDistributableFile(CONFIG.name)
+    .then(function(bundlePath) {
+      let expectedPath = path.resolve('./deployments', CONFIG.name, 'Manifest.json')
+      assert.equal(path.relative(expectedPath, bundlePath), 0)
+    })
+  })
+
+  it('scaleRole', function() {
+    return deployment.scaleRole(MOCK_URN, 'role1', 3, 'localstamp')
+    .then(function (result) {
+      assert.equal(result, `Result: ${MOCK_RESPONSE}`)
+      return deployment.scaleRole(MOCK_URN, 'role1', 3, 'wrong')
+    })
+    .catch(function(error) {
+      if (error.message.localeCompare("Stamp wrong not registered in the workspace") != 0) {
+        return Promise.reject(error)
+      } else {
+        return Promise.resolve()
+      }
+    })
+  })
+
+  it('undeploy', function() {
+    return deployment.undeploy(MOCK_URN, 'localstamp')
+    .then(function () {
+      return deployment.undeploy(MOCK_URN, 'wrong')
+    })
+    .catch(function(error) {
+      if (error.message.localeCompare("Stamp wrong not registered in the workspace") != 0) {
+        return Promise.reject(error)
+      } else {
+        return Promise.resolve()
+      }
+    })
+  })
+
 });

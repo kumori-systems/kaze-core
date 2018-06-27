@@ -1,11 +1,26 @@
-import { AdmissionClient, FileStream, RegistrationResult } from "@kumori/admission-client"
-export { FileStream, RegistrationResult } from "@kumori/admission-client"
+import {
+    AdmissionClient,
+    DeploymentInstanceInfo,
+    DeploymentModification,
+    FileStream,
+    RegistrationResult
+} from "@kumori/admission-client"
+
+export {
+    DeploymentInstanceInfo,
+    DeploymentModification,
+    FileStream,
+    RegistrationResult,
+    ScalingDeploymentModification
+} from "@kumori/admission-client"
 
 export interface StampStub {
     findStorage(): Promise<string[]>
-    sendBundle(bundlesZip?: FileStream, bundlesJson?: FileStream): Promise<RegistrationResult>
     getStorageManifest(urn: string): Promise<any>
+    modifyDeployment (configuration: DeploymentModification): Promise<any>
     removeStorage(urn: string): Promise<any>
+    sendBundle(bundlesZip?: FileStream, bundlesJson?: FileStream): Promise<RegistrationResult>
+    undeploy (urn: string): Promise<DeploymentInstanceInfo[]>
 }
 
 export interface StampStubFactory {

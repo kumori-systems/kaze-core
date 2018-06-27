@@ -1,6 +1,5 @@
 import { Parameter, processParameters, getJSON, startupCheck, executeProgram } from './utils';
 import * as fs from 'fs';
-// import { runTemplate } from './templates';
 import { runTemplate } from './template-managers/yo';
 
 export interface ComponentConfig {

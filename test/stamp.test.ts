@@ -1,49 +1,9 @@
 import { writeEmptyConfigFile, readConfigFile, StampConfig } from '../lib/utils'
 import * as should from 'should'
 import { Stamp } from '../lib/stamp'
-import { StampStubFactory, StampStub, FileStream, RegistrationResult } from '../lib/stamp-manager'
+import { MockStampStubFactory, MOCK_URN } from './mock-stamp-stub'
 import * as fs from 'fs'
 import * as path from 'path'
-
-const MOCK_URN ='eslap://mock.urn/'
-
-class MockAdmissionClient {
-  findStorage(): Promise<string[]> {
-    return Promise.resolve(['mockElement'])
-  }
-  sendBundle(bundlesZip?: FileStream, bundlesJson?: FileStream): Promise<RegistrationResult> {
-    let result:RegistrationResult = {
-      successful: [],
-      errors: [],
-      deployments: {
-        successful: [],
-        errors: []
-      },
-      links: {},
-      tests: {},
-      testToken: ''
-    }
-    return Promise.resolve(result)
-  }
-
-  getStorageManifest(urn: string): Promise<any> {
-    return Promise.reject(new Error('Not implemented'))
-  }
-
-  removeStorage(urn: string): Promise<any> {
-    if (urn && (urn.localeCompare(MOCK_URN) == 0)) {
-      return Promise.resolve(true)
-    } else {
-      return Promise.reject(new Error(' Error code 23 - Rsync command'))
-    }
-  }
-}
-
-class MockStampStubFactory implements StampStubFactory {
-  public getStub(basePath: string, accessToken?: string): StampStub {
-    return new MockAdmissionClient()
-  }
-}
 
 let stamp = new Stamp(new MockStampStubFactory())
 

@@ -2,9 +2,12 @@ import { Parameter, ParameterType, ResourceData, ResourceType, StampConfig, read
 import { Role, Service, ServiceConfig } from './service';
 import { Component } from './component';
 import { access, constants } from 'fs';
-import { AdmissionClient, ScalingDeploymentModification } from '@kumori/admission-client';
-// import { runTemplate } from './templates';
 import { runTemplate } from './template-managers/yo';
+import {
+  DeploymentInstanceInfo,
+  StampStubFactory,
+  ScalingDeploymentModification
+} from './stamp-manager';
 
 export interface DeploymentConfig {
   name: string,
@@ -15,10 +18,12 @@ export class Deployment {
 
   private rootPath: string;
   private workspacePath: string;
+  private stampStubFactory: StampStubFactory
 
-  constructor(workspacePath?: string) {
+  constructor(stampStubFactory: StampStubFactory, workspacePath?: string) {
     this.workspacePath = (workspacePath ? workspacePath : '.');
     this.rootPath = `${this.workspacePath}/deployments`;
+    this.stampStubFactory = stampStubFactory
   }
 
   public async add(template: string, config: DeploymentConfig): Promise<string> {
@@ -109,7 +114,7 @@ export class Deployment {
     }
     let admissionUrl = stampConfig.admission
     let token = stampConfig.token
-    let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+    let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token);
     let modification = new ScalingDeploymentModification();
     modification.deploymentURN = name;
     modification.scaling = {};
@@ -120,7 +125,7 @@ export class Deployment {
     })
   }
 
-  public undeploy(name: string, stamp: string) {
+  public undeploy(name: string, stamp: string): Promise<DeploymentInstanceInfo[]> {
     let workspaceConfig = readConfigFile();
     let stampConfig:StampConfig = workspaceConfig.stamps && workspaceConfig.stamps[stamp]
     if (!stampConfig) {
@@ -128,7 +133,7 @@ export class Deployment {
     }
     let admissionUrl = stampConfig.admission
     let token = stampConfig.token
-    let admission = new AdmissionClient(`${admissionUrl}/admission`, token);
+    let admission = this.stampStubFactory.getStub(`${admissionUrl}/admission`, token);
     return admission.undeploy(name)
   }
 

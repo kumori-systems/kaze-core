@@ -18,7 +18,7 @@ export { ResourceConfig } from './resource';
 import { StampStubFactoryImpl } from './stamp-manager'
 
 export const workspace = new Workspace(new Component(),
-                                       new Deployment(),
+                                       new Deployment(new StampStubFactoryImpl()),
                                        new LocalStamp(),
                                        new Runtime(),
                                        new Service(),
