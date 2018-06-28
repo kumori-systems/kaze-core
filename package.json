@@ -19,7 +19,7 @@
     "url": "https://github.com/kumori-systems/workspace.git"
   },
   "devDependencies": {
-    "@kumori/generator-workspace": "git+ssh://git@gitlab.com/kumori/tools/generator-workspace.git#ticket1261",
+    "@kumori/generator-workspace": "^1.0.0",
     "@taskr/clear": "^1.1.0",
     "@taskr/shell": "^1.1.0",
     "@taskr/typescript": "^1.1.0",

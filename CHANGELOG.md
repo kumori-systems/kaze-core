@@ -1,13 +1,14 @@
 # Changelog
 
-## v1.0.5
+## v1.1.0
 
 Bug fix. Now the template is checked before creating the new element folder in the workspace.
-Templates has been changed to remove temporary and dependency folders after building the final distributable zip.
 Now this library depends only on npm targets 'devinit', 'superclean' y 'dist'.
 Changed `@kumori/runtime` dependency to 1.1.1.
-Templates moved from this repo to a yeoman (http://yeoman.io/).
+Templates moved to their own repository (https://github.com/kumori-systems/generator-workspace) and mutated to be [yeoman](http://yeoman.io) generators.
 Defined a interface StampStub to decouple the workspace lib of @kumori/admission-client.
+Added utilities to add projects. A project populates the workspace with a set of elements, typically some components and a service.
+Now templates are also used to initialize a workspace.
 
 ## v1.0.4
 
