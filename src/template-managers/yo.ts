@@ -22,7 +22,12 @@ export function runTemplate(name: string, targetPath: string, params:{[name: str
                         resolve()
                     }
                 })
-                result.on('error', (error) => console.log(error))
+                if (result && result.on) {
+                    result.on('error', (error) => console.log(error));
+                } else if (result && result.catch) {
+                    result.catch((error) => console.log(error));
+                }
+
             });
 
         } catch(error) {
