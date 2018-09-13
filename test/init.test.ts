@@ -23,7 +23,6 @@ describe('Init command tests', function () {
         assert.equal(fs.existsSync('resources'), true);
         assert.equal(fs.existsSync('runtimes'), true);
         assert.equal(fs.existsSync('services'), true);
-        assert.equal(fs.existsSync('tests'), true);
         done();
       })
       .catch(err => {

@@ -116,45 +116,51 @@ function createMockComponent() {
 
 let deployment = new Deployment(new MockStampStubFactory())
 
+function removeTemporaryFoldersAndFiles(): Error {
+  let error:Error = undefined;
+  let folders = [DEPLOYMENTS_DIR, SERVICES_DIR, COMPONENTS_DIR];
+
+  for (let folder of folders) {
+    try {
+      let stats = fs.statSync(folder);
+      if (stats.isDirectory()) {
+        rimraf.sync(folder);
+      } else {
+        error = new Error(`${folder} is not a folder`);
+      }
+    } catch(err) {
+      error = err;
+    }
+  }
+
+  try {
+    let stats = fs.statSync(KAZE_CONFIG);
+    if (stats.isFile()) {
+      rimraf.sync(KAZE_CONFIG);
+    } else {
+      error = new Error(`${KAZE_CONFIG} is not a file`);
+    }
+  } catch(err) {
+    error = err;
+  }
+  return error
+}
+
 describe('Deployment command tests', function () {
 
   before(() => {
+    removeTemporaryFoldersAndFiles()
     writeEmptyConfigFile();
     createMockService();
     createMockComponent();
   });
 
   after(function (done) {
-    let error:Error = undefined;
-    let folders = [DEPLOYMENTS_DIR, SERVICES_DIR, COMPONENTS_DIR];
-
-    for (let folder of folders) {
-      try {
-        let stats = fs.statSync(folder);
-        if (stats.isDirectory()) {
-          rimraf.sync(folder);
-        } else {
-          error = new Error(`${folder} is not a folder`);
-        }
-      } catch(err) {
-        error = err;
-      }
-    }
-
-    try {
-      let stats = fs.statSync(KAZE_CONFIG);
-      if (stats.isFile()) {
-        rimraf.sync(KAZE_CONFIG);
-      } else {
-        error = new Error(`${KAZE_CONFIG} is not a file`);
-      }
-    } catch(err) {
-      error = err;
-    }
+    let error = removeTemporaryFoldersAndFiles()
     if (error) {
-      done(error);
+      done(error)
     } else {
-      done();
+      done()
     }
   });
 
@@ -163,6 +169,7 @@ describe('Deployment command tests', function () {
     try {
       deployment.add('@kumori/workspace:deployment-basic', CONFIG)
       .then( () => {
+        console.log("DONE")
         let manifest = getJSON(`${DEPLOYMENTS_DIR}/${CONFIG.name}/Manifest.json`);
         assert.equal(manifest.servicename, `eslap://${CONFIG.service.domain}/services/${CONFIG.service.name}/0_0_1`);
         assert.equal(manifest.nickname, CONFIG.name);
@@ -201,9 +208,13 @@ describe('Deployment command tests', function () {
         // }
         done()
       })
-      .catch( error => done(error));
+      .catch( error => {
+        console.log("ASYNC ERROR", error)
+        done(error)
+      });
     } catch(error) {
-     done(error);
+      console.log("SYNC ERROR", error)
+      done(error);
     }
   });
 
