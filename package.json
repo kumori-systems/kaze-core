@@ -19,7 +19,7 @@
     "url": "https://github.com/kumori-systems/workspace.git"
   },
   "devDependencies": {
-    "@kumori/generator-workspace": "^1.0.1",
+    "@kumori/generator-workspace": "1.1.2",
     "@taskr/clear": "^1.1.0",
     "@taskr/shell": "^1.1.0",
     "@taskr/typescript": "^1.1.0",
@@ -44,8 +44,8 @@
     "tslint-config-standard": "^6.0.1"
   },
   "dependencies": {
-    "@kumori/admission-client": "^1.0.0",
-    "@kumori/runtime": "^1.1.1",
+    "@kumori/admission-client": "1.0.2",
+    "@kumori/runtime": "1.1.2",
     "@types/form-data": "^2.2.1",
     "@types/socket.io-client": "^1.4.32",
     "archiver": "^3.0.0",
