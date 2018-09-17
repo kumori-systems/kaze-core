@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.3
+
+Updated dependencies.
+
 ## v1.1.0
 
 Bug fix. Now the template is checked before creating the new element folder in the workspace.
