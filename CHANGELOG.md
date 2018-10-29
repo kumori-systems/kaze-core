@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.4
+
+Bug fixed. New services can be deployed using kumori cli even if the related service application is not in the workspace as soon as it is already registered in the target stamp.
+
 ## v1.1.3
 
 Updated dependencies.

@@ -103,6 +103,9 @@ export class Workspace {
         }
       })
       .then((serviceConfig) => {
+        if (skipped.indexOf(manifest.servicename) != -1) {
+          return Promise.resolve([])
+        }
         let components = this.service.getComponents(serviceConfig);
         let promises:Promise<any>[] = [];
         // Components
