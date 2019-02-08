@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import * as child_process from 'child_process';
 import { Deployment } from '@kumori/admission-client';
 export declare const DEFAULT_CONFIG_FILE = "kumoriConfig.json";
