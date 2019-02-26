@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.9
+
+Dependencies. Updated dependencies.
+
 ## v1.1.8
 
 Dependencies. Updated dependencies.
