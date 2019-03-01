@@ -1,6 +1,7 @@
 import { Parameter, processParameters, getJSON, startupCheck, executeProgram } from './utils';
 import * as fs from 'fs';
 import { runTemplate } from './template-managers/yo';
+import { Runtime } from './runtime'
 
 export interface ComponentConfig {
   domain: string;
@@ -34,18 +35,36 @@ export class Component {
     })
   }
 
-  public build(config: ComponentConfig): Promise<string> {
+  public async installRuntime(config: ComponentConfig): Promise<void> {
+    let runtimeUrn = this._getComponentRuntime(config)
+    let devRuntime = this._getComponentDevRuntime(config)
+    let runtime = new Runtime(this.rootPath)
+    if (!runtimeUrn) {
+        throw new Error(`Runtime not found for component "${config.name} and domain "${config.domain}"`)
+    }
+    try {
+        if (devRuntime) {
+            try {
+                console.log(`\n\n\n----->INSTALLING DEV RUNTIME ${devRuntime}\n\n\n`)
+                await runtime.install(devRuntime)
+            } catch(error) {
+                // await workspace.runtime.install(runtimeUrn)
+            }
+        }
+        console.log(`\n\n\n----->INSTALLING RUNTIME ${runtimeUrn}\n\n\n`)
+        await runtime.install(runtimeUrn)
+    } catch(error) {
+        throw new Error(`Cannot install runtime image for component "${name}"`)
+    }
+  }
+
+  public async build(config: ComponentConfig): Promise<string> {
     let componentRootPath = `${this.rootPath}/${config.domain}/${config.name}`;
-    return this.install(config, componentRootPath)
-    .then(() => {
-      return executeProgram('npm', ['run', 'dist'], {cwd: componentRootPath})
-    })
-    .then(() => {
-      return executeProgram('npm', ['run', 'superclean'], {cwd: componentRootPath})
-    })
-    .then(() => {
-      return `${componentRootPath}/dist/bundle.zip`;
-    })
+    await this.installRuntime(config)
+    await this.install(config, componentRootPath)
+    await executeProgram('npm', ['run', 'dist'], {cwd: componentRootPath})
+    await executeProgram('npm', ['run', 'superclean'], {cwd: componentRootPath})
+    return `${componentRootPath}/dist/bundle.zip`;
   }
 
   public getParameters(config: ComponentConfig): Parameter[] {
@@ -181,4 +200,21 @@ export class Component {
     return `eslap://${domain}/components/${name}/${version}`
   }
 
+  private _getComponentRuntime (config: ComponentConfig): string {
+    let manifest = this.getManifest(config)
+    return manifest.runtime
+  }
+
+  private _getComponentDevRuntime (config): string {
+      let runtimeUrn = this._getComponentRuntime(config)
+      let last = runtimeUrn.lastIndexOf('/')
+      if (last != -1) {
+          let devManifest = runtimeUrn.substring(0, last+1)
+          devManifest += 'dev/'
+          devManifest += runtimeUrn.substring(last+1)
+          return devManifest
+      } else {
+          throw new Error('Wrong ruintime URN format')
+      }
+  }
 }
