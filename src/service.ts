@@ -53,8 +53,10 @@ export class Service {
   public getProvidedChannels(config: ServiceConfig): Channel[] {
     let manifest:any = this.getManifest(config);
     let channels:Channel[] = [];
-    for (let channel of manifest.channels.provides) {
-      channels.push({name: channel.name, type: channel.type, protocol: channel.protocol});
+    if (manifest.channels && manifest.channels.provides) {
+      for (let channel of manifest.channels.provides) {
+        channels.push({name: channel.name, type: channel.type, protocol: channel.protocol});
+      }
     }
     return channels;
   }
@@ -62,8 +64,10 @@ export class Service {
   public getRequiredChannels(config: ServiceConfig): Channel[] {
     let manifest:any = this.getManifest(config);
     let channels:Channel[] = [];
-    for (let channel of manifest.channels.requires) {
-      channels.push({name: channel.name, type: channel.type, protocol: channel.protocol});
+    if (manifest.channels && manifest.channels.requires) {
+      for (let channel of manifest.channels.requires) {
+        channels.push({name: channel.name, type: channel.type, protocol: channel.protocol});
+      }
     }
     return channels;
   }
@@ -177,9 +181,17 @@ export class Service {
           if (error) {
             reject(error);
           } else {
-            let manifest = getJSON(bundlePath);
-            let wsConfig = this.parseName(manifest.name);
-            resolve(wsConfig.version);
+            try {
+              let manifest = getJSON(bundlePath);
+              if (!manifest.name) {
+                reject(new Error('Wrong service manifest format: name missing'))
+              } else {
+                let wsConfig = this.parseName(manifest.name)
+                resolve(wsConfig.version)
+              }
+            } catch(error) {
+              reject(error)
+            }
           }
         });
       } catch(error) {

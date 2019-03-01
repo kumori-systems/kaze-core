@@ -143,28 +143,36 @@ export class Component {
     try {
       return this.getCurrentVersion(config)
       .then((currentVersion) => {
-        return Promise.resolve((currentVersion === config.version));
+        return Promise.resolve((currentVersion === config.version))
       })
     } catch(error) {
-      return Promise.reject(error);
+      return Promise.reject(error)
     }
   }
 
   public getCurrentVersion(config: ComponentConfig): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
-        let bundlePath = `${this.rootPath}/${config.domain}/${config.name}/Manifest.json`;
+        let bundlePath = `${this.rootPath}/${config.domain}/${config.name}/Manifest.json`
         fs.access(bundlePath, fs.constants.R_OK, (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            let manifest = getJSON(bundlePath);
-            let wsConfig = this.parseName(manifest.name);
-            resolve(wsConfig.version);
+          try {
+            if (error) {
+              reject(error);
+            } else {
+              let manifest = getJSON(bundlePath)
+              if (!manifest.name) {
+                reject(new Error('Wrong component manifest format: name missing'))
+              } else {
+                let wsConfig = this.parseName(manifest.name)
+                resolve(wsConfig.version)
+              }
+            }
+          } catch(error) {
+            reject(error)
           }
         });
       } catch(error) {
-        reject(error);
+        reject(error)
       }
     })
   }

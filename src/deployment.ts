@@ -67,10 +67,13 @@ export class Deployment {
   }
 
   public getService(name: string): ServiceConfig {
-    let manifest = this.getManifest(name);
-    let urn = manifest.servicename;
-    let service = new Service(this.workspacePath);
-    return service.parseName(urn);
+    let manifest = this.getManifest(name)
+    if (!manifest || !manifest.servicename) {
+      throw new Error("Wrong deployment manifest. Field \"servicename\" not found")
+    }
+    let urn = manifest.servicename
+    let service = new Service(this.workspacePath)
+    return service.parseName(urn)
   }
 
   // Returns the distributable file for a deployment.

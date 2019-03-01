@@ -144,8 +144,20 @@ export class Stamp {
           return Promise.reject(new Error(`Bundle ${bundle} not available in the workspace`));
         })
         .catch((error) => {
-          let message = ((error && error.message) ? error.message : error.toString());
-          return Promise.reject(new Error(`Error registering ${bundle} in ${stamp}: ${message}`));
+          try {
+            // Some times, admission.sendBundle returns a correct response from Admission stringified
+            // as an error message. In that case, we pic up that result and send it back to the caller.
+            let data = JSON.parse(error.message)
+            if (data && !data.success && data.data) {
+              return Promise.resolve(data.data)
+            } else if (data && data.errors) {
+              return Promise.resolve(data)
+            }
+            throw error
+          } catch(err2) {
+            let message = ((error && error.message) ? error.message : error.toString());
+            return Promise.reject(new Error(`Error registering ${bundle} in ${stamp}: ${message}`));
+          }
         })
       } catch(error) {
         let message = ((error && error.message) ? error.message : error.toString());

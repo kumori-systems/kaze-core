@@ -68,6 +68,9 @@ export class Resource {
 
   public generateUrn(name: string, domain: string) {
     let manifest = this.getManifest({name: name, domain: domain})
+    if (!manifest || !manifest.name) {
+      throw new Error('Wrong resource manifest format: name missing')
+    }
     return manifest.name
   }
 }

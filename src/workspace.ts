@@ -88,6 +88,9 @@ export class Workspace {
         pathInZip: `deployments/${name}/Manifest.json`,
         data: new Buffer(JSON.stringify(manifest, null, 2))
       })
+      if (!manifest || !manifest.servicename) {
+        throw new Error("Wrong deployment manifest. Field \"servicename\" not found")
+      }
       return this.stamp.isRegistered(stamp, manifest.servicename)
       .then((registered):Promise<ServiceConfig> => {
         let serviceConfig = this.deployment.getService(name);
@@ -166,7 +169,7 @@ export class Workspace {
         if (addRandomInbounds) {
           let serviceConfig = this.deployment.getService(name)
           let serviceManifest = this.service.getManifest(serviceConfig)
-          if (serviceManifest.channels && serviceManifest.channels.provides && serviceManifest.channels.provides.length > 0) {
+          if (serviceManifest && serviceManifest.channels && serviceManifest.channels.provides && serviceManifest.channels.provides.length > 0) {
             for (let i in serviceManifest.channels.provides) {
               let inboundName = `inbound-deployment-${i}`
               let channel = serviceManifest.channels.provides[i]
