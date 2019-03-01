@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.11
+
+Runtimes: now the component runtime is installed (incluiding the dev version if exists) before building it"
+
+## v1.1.10
+
+Errors: improved error messages
+
 ## v1.1.9
 
 Dependencies. Updated dependencies.
