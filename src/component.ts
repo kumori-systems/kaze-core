@@ -45,13 +45,14 @@ export class Component {
     try {
         if (devRuntime) {
             try {
-                console.log(`\n\n\n----->INSTALLING DEV RUNTIME ${devRuntime}\n\n\n`)
+                console.log(`Installing development runtime "${devRuntime}"`)
                 await runtime.install(devRuntime)
             } catch(error) {
-                // await workspace.runtime.install(runtimeUrn)
+              console.log(`Development runtime "${devRuntime}" not found`)
+              // await workspace.runtime.install(runtimeUrn)
             }
         }
-        console.log(`\n\n\n----->INSTALLING RUNTIME ${runtimeUrn}\n\n\n`)
+        console.log(`Installing runtime "${runtimeUrn}"`)
         await runtime.install(runtimeUrn)
     } catch(error) {
         throw new Error(`Cannot install runtime image for component "${name}"`)
